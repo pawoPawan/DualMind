@@ -1,4 +1,4 @@
-# GauraAI Chatbot
+# Dual Mind Chatbot
 
 A beautiful AI-powered chatbot with **dual modes**: Cloud-based (Google ADK) and Local browser-based inference.
 
