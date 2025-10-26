@@ -1,29 +1,68 @@
-# Dual Mind Chatbot
+# DualMind AI Chatbot
 
-A beautiful AI-powered chatbot with **dual modes**: Cloud-based (Google ADK) and Local browser-based inference.
+A beautiful AI-powered chatbot with **dual modes**: Cloud-based and Local browser-based inference, available on **Web** and **Mobile** platforms.
 
 🎉 **Two Ways to Chat:**
-- ☁️ **Cloud Mode**: Fast responses with Google's Gemini (requires API key)
+- ☁️ **Cloud Mode**: Fast responses with multiple AI providers (Google, OpenAI, Anthropic, NVIDIA, Azure)
 - 🔒 **Local Mode**: 100% private, runs in your browser (no API key needed!)
+
+📱 **Two Platforms:**
+- 🌐 **Web App**: Beautiful responsive web interface
+- 📱 **Mobile App**: Native iOS & Android via Expo/React Native
 
 Reference: [Google ADK Documentation](https://google.github.io/adk-docs/)
 
+---
+
+## 📚 Table of Contents
+
+- [🚀 Quick Start](#-quick-start)
+  - [🌐 Web Application](#-web-application)
+  - [📱 Mobile Application](#-mobile-application)
+- [✨ Features](#-features)
+  - [Web Platform Features](#-web-platform-features)
+  - [Mobile Platform Features](#-mobile-platform-features)
+- [📁 Project Structure](#-project-structure)
+- [🎮 How It Works](#-how-it-works)
+- [🤖 Model Selection](#-model-selection-new)
+- [🎨 Customization](#-customization-new)
+- [🔄 Enhanced Mode Switching](#-enhanced-mode-switching-new)
+- [🔑 Getting Your FREE API Key](#-getting-your-free-model-access-api-key)
+- [🎨 UI Features](#-ui-features)
+- [📊 API Endpoints](#-api-endpoints)
+- [🔧 Configuration](#-configuration)
+- [🚀 Deployment](#-deployment)
+  - [Web Application Deployment](#-web-application-deployment)
+  - [Mobile App Deployment](#-mobile-app-deployment)
+- [🔒 Security](#-security)
+- [💡 Tips](#-tips)
+- [📖 Resources](#-resources)
+- [🎯 What's Next?](#-whats-next)
+- [🐛 Troubleshooting](#-troubleshooting)
+- [📝 License](#-license)
+
+---
+
 ## 🚀 Quick Start
 
-### Option 1: Using Management Script (Recommended) ⭐
+---
+
+### 🌐 Web Application
+
+#### Option 1: Using Management Script (Recommended) ⭐
 
 ```bash
 # Start the chatbot
-./gauraai.sh start
+./dualmind.sh start
 
 # Check status
-./gauraai.sh status
+./dualmind.sh status
 
 # Stop when done
-./gauraai.sh stop
+./dualmind.sh stop
 ```
 
-### Option 2: Manual Start
+#### Option 2: Manual Start
 
 ```bash
 # 1. Install dependencies
@@ -33,13 +72,11 @@ pip install -r requirements.txt
 python3 server.py
 ```
 
-### 3. Open Your Browser
+#### 3. Open Your Browser
 
 Visit: **http://localhost:8000**
 
-📖 **Management Commands**: See [MANAGEMENT_GUIDE.md](MANAGEMENT_GUIDE.md) for complete documentation.
-
-### 4. Choose Your Mode
+#### 4. Choose Your Mode
 
 You'll see two options:
 
@@ -59,9 +96,95 @@ You'll see two options:
 
 That's it! Start chatting! 🎉
 
+---
+
+### 📱 Mobile Application
+
+#### 1. Prerequisites
+
+Make sure you have Node.js installed:
+```bash
+node --version  # Should be v16 or higher
+npm --version
+```
+
+#### 2. Setup Mobile App (One-Time)
+
+```bash
+# Run the setup script
+./setup_mobile.sh
+```
+
+This will:
+- Install Expo CLI
+- Create React Native project
+- Install all dependencies
+- Setup project structure
+
+#### 3. Start the Backend Server
+
+```bash
+# Terminal 1: Start backend server
+./dualmind.sh start
+```
+
+#### 4. Start Mobile App
+
+```bash
+# Terminal 2: Start mobile app
+cd mobile
+npm start
+```
+
+#### 5. Run on Your Device
+
+**Option A: Physical Device** (Recommended for testing)
+1. Install **Expo Go** app:
+   - [Android Play Store](https://play.google.com/store/apps/details?id=host.exp.exponent)
+   - [iOS App Store](https://apps.apple.com/app/expo-go/id982107779)
+2. Scan QR code from terminal
+3. App loads on your phone! 🎉
+
+**Option B: iOS Simulator** (Mac only)
+```bash
+npm run ios
+# Or press 'i' in the Expo terminal
+```
+
+**Option C: Android Emulator**
+```bash
+npm run android
+# Or press 'a' in the Expo terminal
+```
+
+#### 6. Connect to Backend
+
+For testing on a **real device**, update the API URL:
+
+```bash
+# 1. Find your computer's IP address
+ifconfig | grep "inet " | grep -v 127.0.0.1
+
+# 2. Edit mobile/src/config/api.js
+# Change: http://localhost:8000
+# To: http://YOUR_IP:8000 (e.g., http://192.168.1.100:8000)
+```
+
+Make sure your phone and computer are on the **same WiFi network**.
+
+📖 **Detailed Guides**: 
+- [MOBILE_QUICK_START.md](MOBILE_QUICK_START.md) - Complete mobile setup
+- [EXPO_CONNECTION_GUIDE.md](EXPO_CONNECTION_GUIDE.md) - Connection troubleshooting
+- [MOBILE_APP_PLAN.md](MOBILE_APP_PLAN.md) - Architecture & features
+- [MOBILE_TESTING_GUIDE.md](MOBILE_TESTING_GUIDE.md) - Testing guide
+
+---
+
 ## ✨ Features
 
-### Cloud Mode (☁️)
+### 🌐 Web Platform Features
+
+#### Cloud Mode (☁️)
 - ✅ **Multi-Cloud Providers** - Choose from Google, OpenAI, Anthropic, NVIDIA, Azure
 - ✅ **🤖 Dynamic Model Selection** - Select from multiple AI models per provider
 - ✅ **Fast Responses** - Powered by cutting-edge AI models
@@ -69,43 +192,93 @@ That's it! Start chatting! 🎉
 - ✅ **Model access API Key** - Secure storage in browser localStorage
 - ✅ **Recommended Models** - Auto-selection with visual indicators
 
-### Local Mode (🔒) - NEW!
+#### Local Mode (🔒)
 - ✅ **100% Privacy** - Runs entirely in your browser
 - ✅ **No API Key Required** - No registration needed
 - ✅ **Offline Capable** - Works without internet after download
 - ✅ **GGUF Models** - Uses WebLLM with efficient models
 - ✅ **Multiple Models** - Choose from TinyLlama, Phi-3, Llama 3.2
-- ✅ **📚 RAG Support** - Upload documents and chat with your files! (NEW!)
+- ✅ **📚 RAG Support** - Upload documents and chat with your files!
 - ✅ **Local Embeddings** - Semantic search using Transformers.js
 - ✅ **Document Management** - Upload, view, delete documents in browser
 
-### Common Features
+#### Common Web Features
 - ✅ **Modern Web UI** - Beautiful, responsive chat interface
 - ✅ **Session Management** - Maintains conversation context
 - ✅ **Real-time Chat** - Instant responses with typing indicators
 - ✅ **🔄 Enhanced Mode Switching** - Smart dialogs, info banners, smooth transitions
 - ✅ **🎨 Fully Customizable** - Change name, colors, text in one file!
 
+### 📱 Mobile Platform Features
+
+#### Mobile App Capabilities
+- ✅ **Native iOS & Android** - Built with React Native/Expo
+- ✅ **Cloud Mode Support** - Access all cloud providers on mobile
+- ✅ **Secure Storage** - Biometric authentication & encrypted storage
+- ✅ **Offline Support** - Local Mode via WebView
+- ✅ **Push Notifications** - Get notified of responses (planned)
+- ✅ **Cross-Platform** - One codebase for iOS & Android
+- ✅ **Beautiful UI** - Native mobile components
+- ✅ **Easy Deployment** - Build APK/IPA with Expo
+
+#### Mobile-Specific Features
+- 📱 **Touch-Optimized** - Designed for mobile interaction
+- 🔐 **Biometric Auth** - Face ID / Touch ID / Fingerprint
+- 💾 **AsyncStorage** - Conversation caching
+- 🎨 **Native Navigation** - Smooth screen transitions
+- 📲 **Share Integration** - Share responses with other apps
+- 🌙 **Dark Mode** - System-aware theme switching
+
 ## 📁 Project Structure
 
 ```
 learn/
-├── server.py                  # FastAPI server with dual-mode support
-├── gauraai.sh                 # 🎯 MANAGEMENT SCRIPT (start/stop/status)
-├── branding_config.py         # 🎨 CUSTOMIZE ALL NAMES & COLORS HERE
-├── model_manager.py           # Model download manager (optional)
-├── agent.py                   # Legacy - not used
-├── static/
-│   └── index_local.html       # Local mode UI with WebLLM
-├── requirements.txt           # Python dependencies
-├── .env                       # Optional configuration
-├── README.md                  # This file
-├── MANAGEMENT_GUIDE.md        # 🎯 Management script documentation
-├── CUSTOMIZATION_GUIDE.md     # How to customize everything
-├── FEATURES.md                # Detailed feature documentation
-├── MODE_SWITCHING_GUIDE.md    # 🔄 Enhanced mode switching guide
-├── MODEL_SELECTION_GUIDE.md   # 🤖 Model selection documentation
-└── MULTI_CLOUD_GUIDE.md       # ☁️ Multi-cloud provider guide
+├── 🌐 WEB APPLICATION
+│   ├── server.py                    # FastAPI server with dual-mode support
+│   ├── dualmind.sh                  # 🎯 MANAGEMENT SCRIPT (start/stop/status)
+│   ├── branding_config.py           # 🎨 CUSTOMIZE ALL NAMES & COLORS HERE
+│   ├── cloud_providers.py           # Multi-cloud provider implementation
+│   ├── model_fetcher.py             # Dynamic model fetching
+│   ├── model_manager.py             # Model download manager
+│   ├── static/
+│   │   └── index_local.html         # Local mode UI with WebLLM
+│   └── requirements.txt             # Python dependencies
+│
+├── 📱 MOBILE APPLICATION
+│   ├── mobile/
+│   │   ├── App.js                   # Main mobile app entry
+│   │   ├── app.json                 # Expo configuration
+│   │   ├── package.json             # Node dependencies
+│   │   ├── src/
+│   │   │   ├── config/
+│   │   │   │   ├── api.js           # API configuration
+│   │   │   │   └── branding.js      # Mobile branding
+│   │   │   ├── services/
+│   │   │   │   └── api.js           # API client
+│   │   │   ├── screens/             # Mobile screens
+│   │   │   ├── components/          # React Native components
+│   │   │   └── navigation/          # Navigation setup
+│   │   └── assets/                  # Images, icons, splash
+│   └── setup_mobile.sh              # Mobile setup script
+│
+├── 📚 DOCUMENTATION
+│   ├── README.md                    # This file (main documentation)
+│   ├── FEATURES.md                  # Detailed feature documentation
+│   ├── CUSTOMIZATION_GUIDE.md       # Customization guide
+│   ├── MODE_SWITCHING_GUIDE.md      # Mode switching guide
+│   ├── MODEL_SELECTION_GUIDE.md     # Model selection guide
+│   ├── MULTI_CLOUD_GUIDE.md         # Multi-cloud provider guide
+│   ├── RAG_GUIDE.md                 # RAG implementation guide
+│   │
+│   ├── 📱 Mobile Docs:
+│   ├── MOBILE_APP_PLAN.md           # Mobile app architecture
+│   ├── MOBILE_QUICK_START.md        # Mobile quick start guide
+│   ├── MOBILE_TESTING_GUIDE.md      # Mobile testing guide
+│   └── EXPO_CONNECTION_GUIDE.md     # Expo connection troubleshooting
+│
+└── 🔧 CONFIGURATION
+    ├── .env                         # Optional environment variables
+    └── dualmind.sh                  # Alternative management script
 ```
 
 ## 🎮 How It Works
@@ -200,7 +373,7 @@ All branding is in ONE file: `branding_config.py`
 
 ```python
 # Change chatbot name
-CHATBOT_NAME = "YourBotName"  # Change from "Gaura AI"
+CHATBOT_NAME = "YourBotName"  # Change from "DualMind AI"
 
 # Change colors
 COLOR_PRIMARY_START = "#4299e1"  # Your brand color
@@ -316,18 +489,20 @@ PORT=8000
 
 ## 🚀 Deployment
 
-### Local
+### 🌐 Web Application Deployment
+
+#### Local
 ```bash
 python3 server.py
 ```
 
-### Production (with Gunicorn)
+#### Production (with Gunicorn)
 ```bash
 pip install gunicorn
 gunicorn server:app -w 4 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
 ```
 
-### Docker
+#### Docker
 ```dockerfile
 FROM python:3.11-slim
 WORKDIR /app
@@ -338,58 +513,310 @@ CMD ["python", "server.py"]
 ```
 
 ```bash
-docker build -t adk-chatbot .
-docker run -p 8000:8000 adk-chatbot
+docker build -t dualmind-ai-chatbot .
+docker run -p 8000:8000 dualmind-ai-chatbot
 ```
+
+#### Cloud Platforms
+- **Google Cloud Run**: `gcloud run deploy`
+- **Heroku**: `git push heroku main`
+- **Railway**: Connect GitHub repo
+- **AWS EC2**: Deploy with systemd service
+
+---
+
+### 📱 Mobile App Deployment
+
+#### Development Build (Testing)
+```bash
+cd mobile
+
+# For testing on physical devices
+npx expo start
+
+# For iOS simulator (Mac only)
+npx expo start --ios
+
+# For Android emulator
+npx expo start --android
+```
+
+#### Production Builds
+
+**Android APK** (for sideloading/distribution)
+```bash
+cd mobile
+
+# Create production build
+eas build --platform android --profile production
+
+# Or build locally
+expo build:android -t apk
+```
+
+**iOS IPA** (requires Apple Developer account)
+```bash
+cd mobile
+
+# Create production build
+eas build --platform ios --profile production
+
+# Or build locally (Mac only)
+expo build:ios
+```
+
+#### Publishing to App Stores
+
+**Google Play Store:**
+1. Build signed APK/AAB:
+   ```bash
+   eas build --platform android --profile production
+   ```
+2. Create Google Play Console account
+3. Upload AAB file
+4. Fill in store listing details
+5. Submit for review
+
+**Apple App Store:**
+1. Build IPA:
+   ```bash
+   eas build --platform ios --profile production
+   ```
+2. Create App Store Connect account
+3. Upload via Transporter or Xcode
+4. Fill in App Store listing
+5. Submit for review
+
+#### Over-The-Air (OTA) Updates
+
+With Expo, you can push updates without app store approval:
+
+```bash
+cd mobile
+eas update --branch production
+```
+
+Updates are downloaded automatically when users open the app!
+
+**Note:** OTA updates work for JavaScript/React changes only, not for native code changes.
 
 ## 🔒 Security
 
+### Web Application Security
 - ✅ Model access API keys stored in browser's localStorage (client-side only)
 - ✅ Keys never stored on server
 - ✅ Each user uses their own Model access API key
 - ✅ Keys transmitted securely via HTTPS (in production)
 - ✅ Easy to change/revoke keys anytime
+- ✅ Local mode: 100% client-side processing, zero data transmission
+
+### Mobile Application Security
+- ✅ **Encrypted Storage**: API keys stored using React Native's SecureStore
+- ✅ **Biometric Authentication**: Face ID, Touch ID, or Fingerprint support
+- ✅ **Secure Communication**: All API calls over HTTPS
+- ✅ **No Key Logging**: Keys never logged or transmitted to third parties
+- ✅ **App Sandboxing**: iOS/Android app sandboxing for data isolation
+- ✅ **Certificate Pinning**: Optional SSL pinning for enhanced security
+- ✅ **Auto-Lock**: Session timeout for sensitive data
 
 ## 💡 Tips
 
-1. **Model Access API Key Format**: Should start with `AIza`
-2. **Storage**: Key is saved in your browser
+### Web Application Tips
+1. **Model Access API Key Format**: Format varies by provider (Google keys start with `AIza`)
+2. **Storage**: Keys are saved in your browser localStorage
 3. **Privacy**: Use incognito mode for temporary sessions
 4. **Multiple Keys**: Clear browser data to switch accounts
-5. **Quota**: Free tier has limits - check Google AI Studio
+5. **Quota**: Free tier has limits - check your provider's documentation
+6. **Local Mode**: Download models on fast WiFi (600MB - 2GB)
+7. **Performance**: Local mode works best with WebGPU-enabled browsers
+
+### Mobile Application Tips
+1. **First Setup**: Run `./setup_mobile.sh` before starting development
+2. **Same WiFi**: Ensure phone and computer on same network for testing
+3. **IP Address**: Update API URL in `mobile/src/config/api.js` for real devices
+4. **Expo Go**: Use Expo Go app for quick testing (no build required)
+5. **Cache Clearing**: Run `expo start -c` if you encounter module issues
+6. **Backend First**: Always start backend server before testing mobile app
+7. **Development**: Use iOS simulator (Mac) or Android emulator for faster testing
+8. **Biometric Auth**: Test on real device, simulators may not support biometrics
 
 ## 📖 Resources
 
+### Web Development Resources
 - [Google ADK Documentation](https://google.github.io/adk-docs/)
-- [Get API Key](https://aistudio.google.com/apikey)
-- [ADK Quickstart](https://google.github.io/adk-docs/get-started/quickstart/)
-- [Gemini API Docs](https://ai.google.dev/docs)
+- [Get Google API Key](https://aistudio.google.com/apikey)
+- [OpenAI API Keys](https://platform.openai.com/api-keys)
+- [Anthropic API Keys](https://console.anthropic.com/)
+- [NVIDIA API Keys](https://build.nvidia.com/)
+- [Azure OpenAI](https://azure.microsoft.com/en-us/products/ai-services/openai-service)
+- [WebLLM Documentation](https://webllm.mlc.ai/)
+- [FastAPI Documentation](https://fastapi.tiangolo.com/)
+
+### Mobile Development Resources
+- [Expo Documentation](https://docs.expo.dev/)
+- [React Native Documentation](https://reactnative.dev/)
+- [React Navigation](https://reactnavigation.org/)
+- [Expo Go App - iOS](https://apps.apple.com/app/expo-go/id982107779)
+- [Expo Go App - Android](https://play.google.com/store/apps/details?id=host.exp.exponent)
+- [EAS Build Documentation](https://docs.expo.dev/build/introduction/)
+- [React Native SecureStore](https://docs.expo.dev/versions/latest/sdk/securestore/)
+
+### Project Documentation
+- [FEATURES.md](FEATURES.md) - Complete feature list
+- [MOBILE_APP_PLAN.md](MOBILE_APP_PLAN.md) - Mobile architecture
+- [EXPO_CONNECTION_GUIDE.md](EXPO_CONNECTION_GUIDE.md) - Connection troubleshooting
+- [CUSTOMIZATION_GUIDE.md](CUSTOMIZATION_GUIDE.md) - Branding customization
 
 ## 🎯 What's Next?
 
-- Add function calling/tools
-- Implement multi-agent systems
-- Add voice input/output
-- Export conversations
-- Add authentication for team use
-- Deploy to cloud (Cloud Run, GKE)
+### Planned Features
+
+#### Web Application
+- [ ] Function calling/tools integration
+- [ ] Implement multi-agent systems
+- [ ] Voice input/output support
+- [ ] Export conversations (JSON, PDF, Markdown)
+- [ ] Conversation search and filtering
+- [ ] Authentication for team/enterprise use
+- [ ] More local models (Mistral, Gemma, Qwen)
+- [ ] Image understanding (multimodal support)
+- [ ] Advanced RAG with vector databases
+
+#### Mobile Application
+- [ ] Complete Chat UI implementation
+- [ ] Local Mode via WebView + WebLLM
+- [ ] Push notifications for long responses
+- [ ] Voice input via device microphone
+- [ ] Image/camera integration for multimodal chat
+- [ ] Offline mode with local caching
+- [ ] Share conversations via native sharing
+- [ ] Dark mode with system sync
+- [ ] Widget support (iOS/Android)
+- [ ] Apple Watch / Wear OS companion app
+
+#### Infrastructure
+- [ ] Multi-user authentication system
+- [ ] Team collaboration features
+- [ ] Usage analytics dashboard
+- [ ] Rate limiting and quota management
+- [ ] Deploy to cloud (Cloud Run, GKE, AWS)
+- [ ] CDN integration for faster model downloads
+- [ ] Database integration for conversation persistence
 
 ## 🐛 Troubleshooting
 
-### "Invalid Model access API key" error:
-- Make sure key starts with `AIza`
-- Get new Model access API key from https://aistudio.google.com/apikey
-- Check if key is active in Google AI Studio
+### Web Application Issues
 
-### Can't connect to server:
-- Make sure server is running: `python3 server.py`
-- Check if port 8000 is available
+#### "Invalid API key" error:
+- Verify key format (varies by provider - Google keys start with `AIza`)
+- Get new API key from your provider's console
+- Check if key is active and has proper permissions
+- Try a different provider to isolate the issue
+
+#### Can't connect to server:
+- Make sure server is running: `python3 server.py` or `./dualmind.sh status`
+- Check if port 8000 is available: `lsof -i:8000`
 - Try different port: `PORT=8001 python3 server.py`
+- Check firewall settings
 
-### Browser not saving Model access API key:
+#### Browser not saving API key:
 - Check if cookies/localStorage enabled
 - Try different browser
 - Clear browser cache and retry
+- Disable browser extensions that might block storage
+
+#### Local Mode not loading:
+- Ensure WebGPU is supported (Chrome 113+)
+- Check browser console for errors
+- Try clearing browser cache
+- Verify sufficient disk space for model download
+
+---
+
+### Mobile Application Issues
+
+#### Cannot connect to backend:
+```bash
+# 1. Check backend is running
+./dualmind.sh status
+
+# 2. Verify firewall allows port 8000
+# 3. For real device: Check IP in mobile/src/config/api.js
+# 4. Ensure same WiFi network
+```
+
+#### QR code not showing:
+- Make terminal window larger (QR needs space)
+- Wait 30-60 seconds for Metro to start
+- Open web interface: `http://localhost:8081`
+- Use manual URL entry in Expo Go
+
+#### Metro bundler won't start:
+```bash
+cd mobile
+npx expo start -c  # Clear cache
+```
+
+#### Module not found errors:
+```bash
+cd mobile
+rm -rf node_modules
+npm install
+npx expo start
+```
+
+#### Expo Go not loading app:
+1. Ensure phone and computer on same network
+2. Try scanning QR code again
+3. Manually enter URL shown in terminal
+4. Try tunnel mode: `npx expo start --tunnel`
+
+#### App crashes on device:
+- Check React Native logs in terminal
+- Clear Expo cache: `npx expo start -c`
+- Rebuild: `rm -rf node_modules && npm install`
+- Check for missing dependencies
+
+#### IP address changed:
+```bash
+# Find new IP
+ifconfig | grep "inet " | grep -v 127.0.0.1
+
+# Update mobile/src/config/api.js
+export const API_BASE_URL = 'http://NEW_IP:8000';
+```
+
+---
+
+### Common Issues
+
+#### Port already in use:
+```bash
+# Kill process on port 8000
+lsof -ti:8000 | xargs kill
+
+# Or use different port
+PORT=8001 python3 server.py
+```
+
+#### Python dependencies issues:
+```bash
+pip install --upgrade pip
+pip install -r requirements.txt --force-reinstall
+```
+
+#### Node.js/npm issues:
+```bash
+# Update Node.js (should be v16+)
+node --version
+
+# Clear npm cache
+npm cache clean --force
+```
+
+📖 **More Help**: 
+- [EXPO_CONNECTION_GUIDE.md](EXPO_CONNECTION_GUIDE.md) - Detailed mobile troubleshooting
+- [MOBILE_TESTING_GUIDE.md](MOBILE_TESTING_GUIDE.md) - Mobile testing guide
 
 ## 📝 License
 
@@ -397,8 +824,45 @@ Open source - use freely!
 
 ---
 
-**GauraAI - Your Intelligent AI Assistant 🤖**
+## 🌟 About DualMind AI
 
-Powered by Google's Agent Development Kit
+**DualMind AI Chatbot** is a comprehensive, cross-platform AI assistant that puts you in control.
 
-**No setup, no configuration files, just run and chat!** 🚀
+### Key Highlights:
+- 🌐 **Web & Mobile**: Access from any device
+- ☁️ **Multi-Cloud**: 5 AI providers, 30+ models
+- 🔒 **Privacy First**: Local mode with zero data transmission
+- 🎨 **Fully Customizable**: Change branding in minutes
+- 📱 **Native Mobile**: React Native for iOS & Android
+- 🚀 **Easy Deployment**: One-click setup, multiple deployment options
+
+### Perfect For:
+- 👨‍💻 **Developers**: Learn AI integration, customize everything
+- 🏢 **Enterprises**: Self-host, maintain privacy, scale as needed
+- 🎓 **Students**: Experiment with different AI models
+- 🔐 **Privacy-Conscious**: Use local mode for sensitive data
+- 📱 **Mobile Users**: Native app experience on iOS/Android
+
+---
+
+**DualMind AI - Your Intelligent AI Assistant, Everywhere** 🤖
+
+Powered by Google ADK, OpenAI, Anthropic, NVIDIA, Azure, and WebLLM
+
+### Quick Start Commands:
+```bash
+# Web Application
+./dualmind.sh start
+
+# Mobile Application
+./setup_mobile.sh
+cd mobile && npm start
+```
+
+**No complex setup, just run and chat!** 🚀
+
+---
+
+**Made with ❤️ for the AI community**
+
+Star ⭐ this project if you find it useful!
