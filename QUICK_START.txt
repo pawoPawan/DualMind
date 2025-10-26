@@ -1,0 +1,175 @@
+╔══════════════════════════════════════════════════════════════════╗
+║                  🧠 DUALMIND AI - QUICK START                   ║
+╚══════════════════════════════════════════════════════════════════╝
+
+📍 MAIN URL: http://localhost:8000
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🚀 SERVER COMMANDS
+
+   Start:    ./dualmind.sh start
+   Stop:     ./dualmind.sh stop
+   Status:   ./dualmind.sh status
+   Restart:  ./dualmind.sh restart
+   Logs:     ./dualmind.sh logs
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+☁️  CLOUD MODE (Fast, Powerful)
+
+   1. Go to http://localhost:8000
+   2. Click "☁️ Cloud Mode"
+   3. Select provider (NVIDIA recommended)
+   4. Pick a model
+   5. Enter API key
+   6. Start chatting!
+
+   Features:
+   • 5 cloud providers
+   • Dynamic model selection
+   • API key validation
+   • Streaming responses
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔒 LOCAL MODE + RAG (Private, No API Key)
+
+   1. Go to http://localhost:8000/local
+   2. Select model (Phi-3-mini recommended)
+   3. Click "Download & Load Model"
+   4. Wait for download
+
+   📚 UPLOAD DOCUMENTS:
+   1. Click "📚 Knowledge Base"
+   2. Upload TXT/MD files
+   3. Wait for processing (~60ms per chunk)
+   4. Close modal
+
+   💬 CHAT WITH DOCUMENTS:
+   • Ask questions about your content
+   • Look for "📚 Answer enhanced" badge
+   • RAG automatically retrieves relevant info
+
+   🗑️ MANAGE CONTEXT:
+   • Click "🗑️ Clear History" button
+   • Or auto-trims after 8 messages
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📊 TOKEN BUDGET (2048 token models)
+
+   RAG Context:     400 tokens (19.5%)
+   History:         800 tokens (39.1%)
+   Query:            50 tokens ( 2.4%)
+   Response:        748 tokens (36.5%)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 RECOMMENDED MODELS FOR RAG
+
+   Model            Context  RAG Chunks  Best For
+   ─────────────────────────────────────────────────
+   TinyLlama-1.1B    2048    1-2         Quick tests
+   Phi-2             2048    2           General chat
+   Phi-3-mini ⭐     4096    3-4         RAG (Best!)
+   Llama-3.2-3B      4096    3-4         Better quality
+   Llama-3.1-8B      8192    5-6         Max context
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💡 QUICK TIPS
+
+   ✅ DO:
+   • Use TXT or MD files for best results
+   • Ask specific questions
+   • Clear history every 5-10 exchanges
+   • Use Phi-3-mini for RAG workloads
+
+   ❌ DON'T:
+   • Upload files > 5MB
+   • Ask very long questions (>200 words)
+   • Expect infinite conversation history
+   • Use smallest models for heavy RAG
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🐛 TROUBLESHOOTING
+
+   Problem: Context window exceeded
+   Fix:     Click "🗑️ Clear History"
+            Use larger model (Phi-3 or Llama-3.2-3B)
+
+   Problem: No RAG indicator
+   Fix:     Check documents uploaded
+            Use keywords from documents
+            Similarity must be > 0.3
+
+   Problem: Slow performance
+   Fix:     Delete unused documents
+            Close other tabs
+            Use smaller models
+
+   Problem: Model won't load
+   Fix:     Check internet (first time)
+            Clear browser cache
+            Try incognito mode
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📚 DOCUMENTATION
+
+   Main:         README.md
+   RAG Guide:    RAG_GUIDE.md
+   Setup:        SETUP_COMPLETE.md
+   Embeddings:   TRANSFORMERS_JS_EXPLAINED.md
+   Diagrams:     EMBEDDING_FLOW_DIAGRAM.md
+   Fixes:        CONTEXT_WINDOW_FIX.md
+   Management:   MANAGEMENT_GUIDE.md
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔍 DEBUG (Open browser console F12)
+
+   RAG Activity:
+   RAG: Using context from 2 chunks
+   Estimated context tokens: 350
+   Similarity scores: ['0.876', '0.654']
+
+   History Management:
+   Trimmed conversation history to last 8 messages
+
+   Errors:
+   Context window exceeded. Clearing conversation history...
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✨ FEATURES IMPLEMENTED
+
+   ✅ Dual Mode (Cloud + Local)
+   ✅ Multi-cloud providers (5)
+   ✅ Dynamic model selection
+   ✅ RAG with local embeddings
+   ✅ Document upload & management
+   ✅ Context window management
+   ✅ Token optimization
+   ✅ Streaming responses
+   ✅ API key validation
+   ✅ Error recovery
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎉 STATUS: READY TO USE!
+
+   Server:  ✅ RUNNING
+   Port:    8000
+   Cloud:   ✅ Available
+   Local:   ✅ Available
+   RAG:     ✅ Enabled
+
+   Start: http://localhost:8000
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🧠 DualMind AI - Your documents, your privacy, your AI!
+

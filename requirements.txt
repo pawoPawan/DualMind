@@ -1,0 +1,18 @@
+# Core dependencies - Google AI
+google-generativeai>=0.3.2
+
+# Multi-cloud provider support
+openai>=1.0.0
+anthropic>=0.18.0
+
+# Web Framework
+fastapi>=0.104.1
+uvicorn[standard]>=0.24.0
+
+# Utilities
+python-dotenv>=1.0.0
+pydantic>=2.9.0
+requests>=2.31.0
+
+# For downloading models from Hugging Face (server-side caching)
+huggingface-hub>=0.20.1
