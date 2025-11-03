@@ -154,22 +154,12 @@
     </div>
     
     <div class="cta">
-      <button class="btn" onclick="openExtension()">Get Started</button>
+      <button class="btn" id="get-started-btn">Get Started</button>
       <a href="options.html" class="secondary-link">Configure Settings →</a>
     </div>
   </div>
   
-  <script>
-    function openExtension() {
-      // Try to open the extension popup
-      chrome.action.openPopup();
-      
-      // Close this tab after a short delay
-      setTimeout(() => {
-        window.close();
-      }, 500);
-    }
-  </script>
+  <script src="js/welcome.js"></script>
 </body>
 </html>
 

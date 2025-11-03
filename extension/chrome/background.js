@@ -126,6 +126,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   
   if (request.action === 'openOptions') {
     chrome.runtime.openOptionsPage();
+    sendResponse({ success: true });
+  }
+  
+  if (request.action === 'openPopup') {
+    // Open the popup programmatically
+    chrome.action.openPopup();
+    sendResponse({ success: true });
   }
 });
 
