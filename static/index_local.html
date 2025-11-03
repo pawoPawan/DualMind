@@ -772,6 +772,22 @@
             <div class="modal-title">📚 Knowledge Base (RAG)</div>
             <div class="modal-subtitle">Upload documents to enhance AI responses with your content</div>
             
+            <!-- Embedding Model Selection -->
+            <div class="kb-section">
+                <div class="kb-section-title">🧠 Embedding Model</div>
+                <select id="embeddingModelSelect" class="modal-input" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; background: white; cursor: pointer;" onchange="onEmbeddingModelChange()">
+                    <option value="Xenova/all-MiniLM-L6-v2">all-MiniLM-L6-v2 (Default - Fast, 22MB)</option>
+                    <option value="Xenova/all-mpnet-base-v2">all-mpnet-base-v2 (Better Quality, 80MB)</option>
+                    <option value="Xenova/bge-small-en-v1.5">BGE-small-en-v1.5 (Fast, 33MB)</option>
+                    <option value="Xenova/bge-base-en-v1.5">BGE-base-en-v1.5 (High Quality, 109MB)</option>
+                    <option value="Xenova/gte-small">GTE-small (Multilingual, 33MB)</option>
+                    <option value="Xenova/multilingual-e5-small">E5-small-multilingual (Multilingual, 118MB)</option>
+                </select>
+                <div style="font-size: 12px; color: #999; margin-top: 8px;">
+                    💡 Model downloads once and is cached. Larger models provide better quality but take longer to download initially.
+                </div>
+            </div>
+            
             <!-- Upload Section -->
             <div class="kb-section">
                 <div class="kb-section-title">📤 Upload Documents</div>
@@ -824,7 +840,8 @@
             <div class="help-text">
                 ✓ Documents are embedded locally using Transformers.js<br>
                 ✓ Data stored in browser IndexedDB - never uploaded<br>
-                ✓ AI will use relevant chunks to answer your questions
+                ✓ AI will use relevant chunks to answer your questions<br>
+                ✓ Choose embedding model based on your needs (quality vs speed)
             </div>
         </div>
     </div>
@@ -1675,6 +1692,7 @@
         
         let embeddingPipeline = null;
         let knowledgeBase = [];
+        let currentEmbeddingModel = localStorage.getItem('selectedEmbeddingModel') || 'Xenova/all-MiniLM-L6-v2';
         const DB_NAME = 'DualMindKnowledgeBase';
         const DB_VERSION = 1;
         const STORE_NAME = 'documents';
@@ -1697,33 +1715,85 @@
         }
         
         // Initialize embedding model
-        async function initEmbeddingModel() {
+        async function initEmbeddingModel(forceReload = false) {
+            // Get currently selected model
+            const selectedModel = document.getElementById('embeddingModelSelect')?.value || currentEmbeddingModel;
+            
+            // If model changed or force reload, reset the pipeline
+            if (forceReload || currentEmbeddingModel !== selectedModel) {
+                embeddingPipeline = null;
+                currentEmbeddingModel = selectedModel;
+                localStorage.setItem('selectedEmbeddingModel', selectedModel);
+            }
+            
             if (!embeddingPipeline) {
-                console.log('Loading embedding model...');
+                console.log('Loading embedding model:', currentEmbeddingModel);
                 const statusEl = document.getElementById('uploadStatus');
+                const modelName = currentEmbeddingModel.split('/')[1];
+                
                 if (statusEl) {
-                    statusEl.innerHTML = '🔄 Loading embedding model (first time only)...';
+                    statusEl.innerHTML = `🔄 Loading ${modelName}... (downloads once, then cached)`;
                 }
                 
                 try {
                     embeddingPipeline = await window.transformers.pipeline(
                         'feature-extraction',
-                        'Xenova/all-MiniLM-L6-v2'
+                        currentEmbeddingModel
                     );
-                    console.log('Embedding model loaded successfully');
+                    console.log('Embedding model loaded successfully:', currentEmbeddingModel);
                     if (statusEl) {
-                        statusEl.innerHTML = '✓ Embedding model ready';
+                        statusEl.innerHTML = `✓ ${modelName} ready`;
                         setTimeout(() => statusEl.innerHTML = '', 2000);
                     }
                 } catch (error) {
                     console.error('Failed to load embedding model:', error);
                     if (statusEl) {
-                        statusEl.innerHTML = '✗ Failed to load embedding model';
+                        statusEl.innerHTML = '✗ Failed to load embedding model: ' + error.message;
                     }
                     throw error;
                 }
             }
             return embeddingPipeline;
+        }
+        
+        // Handle embedding model change
+        async function onEmbeddingModelChange() {
+            const newModel = document.getElementById('embeddingModelSelect').value;
+            const oldModel = currentEmbeddingModel;
+            
+            if (newModel === oldModel) {
+                return;
+            }
+            
+            // Check if there are existing documents
+            if (knowledgeBase.length > 0) {
+                const modelName = newModel.split('/')[1];
+                if (confirm(`Changing embedding model will require re-uploading documents (embeddings are model-specific).\n\nNew model: ${modelName}\n\nClear existing documents and switch model?`)) {
+                    await clearKnowledgeBase();
+                    embeddingPipeline = null;
+                    currentEmbeddingModel = newModel;
+                    localStorage.setItem('selectedEmbeddingModel', newModel);
+                    
+                    // Preload the new model
+                    document.getElementById('uploadStatus').innerHTML = '🔄 Loading new embedding model...';
+                    try {
+                        await initEmbeddingModel(true);
+                    } catch (error) {
+                        alert('Failed to load new embedding model. Please try again.');
+                        // Revert selection
+                        document.getElementById('embeddingModelSelect').value = oldModel;
+                    }
+                } else {
+                    // User cancelled, revert selection
+                    document.getElementById('embeddingModelSelect').value = oldModel;
+                }
+            } else {
+                // No documents, safe to switch
+                embeddingPipeline = null;
+                currentEmbeddingModel = newModel;
+                localStorage.setItem('selectedEmbeddingModel', newModel);
+                console.log('Embedding model changed to:', newModel);
+            }
         }
         
         // Estimate token count (rough: ~4 chars per token)
@@ -2027,6 +2097,13 @@
         // Open Knowledge Base modal
         async function openKnowledgeBase() {
             document.getElementById('knowledgeBaseModal').classList.remove('hidden');
+            
+            // Set the dropdown to the currently selected model
+            const embeddingSelect = document.getElementById('embeddingModelSelect');
+            if (embeddingSelect) {
+                embeddingSelect.value = currentEmbeddingModel;
+            }
+            
             await refreshDocumentsList();
             updateKBStats();
         }

@@ -204,6 +204,7 @@ Make sure your phone and computer are on the **same WiFi network**.
 **AI Capabilities:**
 - ✅ **Multiple Models** - TinyLlama, Phi-3, Llama 3.2, Qwen2.5, SmolLM2
 - ✅ **📚 RAG Support** - Upload documents and chat with your files
+- ✅ **6 Embedding Models** - Choose quality vs speed (all-MiniLM, MPNet, BGE, GTE, E5)
 - ✅ **Local Embeddings** - Semantic search using Transformers.js
 - ✅ **💭 Custom Memory** - Set personalized AI instructions
 

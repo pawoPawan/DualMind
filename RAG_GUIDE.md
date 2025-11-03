@@ -13,10 +13,16 @@ DualMind AI's Local Mode now includes a **complete RAG (Retrieval-Augmented Gene
    - Drag & drop interface (coming soon)
    - Multiple file upload support
 
-2. **🧠 Local Embeddings**
+2. **🧠 Local Embeddings with Model Selection**
    - Uses Transformers.js for browser-based embeddings
-   - Model: `Xenova/all-MiniLM-L6-v2` (22MB)
-   - Fast and efficient sentence embeddings
+   - **6 embedding models to choose from**:
+     - `all-MiniLM-L6-v2` (Default - Fast, 22MB)
+     - `all-mpnet-base-v2` (Better Quality, 80MB)
+     - `BGE-small-en-v1.5` (Fast, 33MB)
+     - `BGE-base-en-v1.5` (High Quality, 109MB)
+     - `GTE-small` (Multilingual, 33MB)
+     - `E5-small-multilingual` (Multilingual, 118MB)
+   - Choose based on your needs (speed vs quality vs language support)
 
 3. **📦 Persistent Storage**
    - IndexedDB for local storage
@@ -46,9 +52,9 @@ DualMind AI's Local Mode now includes a **complete RAG (Retrieval-Augmented Gene
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                   User Interface                        │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  │
-│  │ File Upload  │  │ Document List│  │  Chat Input  │  │
-│  └──────────────┘  └──────────────┘  └──────────────┘  │
+│  ┌─────────────┐ ┌──────────────┐ ┌──────────────┐     │
+│  │Model Select │ │ File Upload  │ │ Document List│     │
+│  └─────────────┘ └──────────────┘ └──────────────┘     │
 └─────────────────────────────────────────────────────────┘
                           │
                           ▼
@@ -420,18 +426,29 @@ const chunks = chunkText(text, 500, 50);
 // overlap: 50 characters
 ```
 
-### Using Different Embedding Model
+### Choosing Embedding Models
 
-```javascript
-embeddingPipeline = await window.transformers.pipeline(
-    'feature-extraction',
-    'Xenova/all-MiniLM-L6-v2'  // Change to another model
-);
-```
+DualMind Local Mode now supports **6 embedding models**. Choose based on your needs:
 
-Popular alternatives:
-- `Xenova/paraphrase-multilingual-MiniLM-L12-v2` (multilingual)
-- `Xenova/bge-small-en-v1.5` (better quality, larger)
+**For Speed (Quick Responses):**
+- `Xenova/all-MiniLM-L6-v2` (default, 22MB) - Best for testing and quick responses
+- `Xenova/bge-small-en-v1.5` (33MB) - Slightly better quality
+
+**For Quality (Better Accuracy):**
+- `Xenova/all-mpnet-base-v2` (80MB) - Excellent quality for English
+- `Xenova/bge-base-en-v1.5` (109MB) - Highest quality for English
+
+**For Multilingual Documents:**
+- `Xenova/gte-small` (33MB) - Good for multiple languages
+- `Xenova/multilingual-e5-small` (118MB) - Best multilingual support
+
+**How to Select:**
+1. Open Knowledge Base modal
+2. Choose embedding model from dropdown (before uploading)
+3. Model downloads once and is cached
+4. Upload your documents
+
+**Note:** Changing models requires re-uploading documents (embeddings are model-specific)
 
 ## 📚 Resources
 
