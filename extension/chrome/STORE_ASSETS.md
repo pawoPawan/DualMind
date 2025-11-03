@@ -137,7 +137,7 @@ Transform your browsing experience with intelligent AI assistance - install Dual
 ---
 
 **Made with ❤️ by Pawan Kumar**
-Connect: https://www.linkedin.com/in/YOUR_LINKEDIN_USERNAME/
+Connect: https://www.linkedin.com/in/pawan-kumar-709911105/
 GitHub: https://github.com/pawoPawan/DualMind
 ```
 
@@ -148,7 +148,7 @@ You'll need to create a privacy policy. I'll help you with this below.
 
 **Homepage URL** (Optional):
 ```
-https://www.linkedin.com/in/YOUR_LINKEDIN_USERNAME/
+https://www.linkedin.com/in/pawan-kumar-709911105/
 ```
 
 **GitHub Repository**:
