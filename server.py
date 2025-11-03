@@ -62,6 +62,42 @@ class ChatResponse(BaseModel):
     provider: Optional[str] = None
 
 
+class RAGChatRequest(BaseModel):
+    message: str
+    api_key: str
+    provider: Optional[str] = "nvidia"
+    model: Optional[str] = None
+    session_id: Optional[str] = None
+    embedding_provider: Optional[str] = "openai"  # Embedding provider
+    embedding_model: Optional[str] = None  # Embedding model
+    embedding_api_key: Optional[str] = None  # Separate API key for embeddings
+    use_rag: bool = True  # Whether to use RAG
+    top_k: int = 3  # Number of relevant chunks to retrieve
+
+
+class DocumentUploadRequest(BaseModel):
+    filename: str
+    content: str  # Base64 encoded file content
+    session_id: str
+    embedding_provider: str = "openai"
+    embedding_model: Optional[str] = None
+    embedding_api_key: Optional[str] = None
+
+
+class DocumentListResponse(BaseModel):
+    documents: List[Dict[str, Any]]
+    total: int
+
+
+class DocumentDeleteRequest(BaseModel):
+    session_id: str
+    doc_id: str
+
+
+class EmbeddingProvidersResponse(BaseModel):
+    providers: Dict[str, Any]
+
+
 # Routes
 @app.get("/local", response_class=HTMLResponse)
 async def local_mode():
@@ -1764,6 +1800,281 @@ async def clear_session(session_id: str):
     if session_id in user_sessions:
         del user_sessions[session_id]
     return {"message": "Session cleared", "session_id": session_id}
+
+
+# ============================================================================
+# RAG (Retrieval-Augmented Generation) Endpoints for Cloud Mode
+# ============================================================================
+
+@app.get("/api/rag/embedding-providers", response_model=EmbeddingProvidersResponse)
+async def get_embedding_providers():
+    """Get list of available embedding providers"""
+    try:
+        from embedding_service import list_providers
+        providers = list_providers()
+        return {"providers": providers}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/rag/upload")
+async def upload_document(request: DocumentUploadRequest):
+    """Upload and process a document for RAG"""
+    try:
+        import base64
+        from datetime import datetime
+        from document_processor import (
+            DocumentProcessor, DocumentChunker, document_store
+        )
+        from embedding_service import EmbeddingClient
+        
+        # Decode file content
+        file_content = base64.b64decode(request.content)
+        
+        # Extract text from document
+        processor = DocumentProcessor()
+        text = processor.extract_text_from_file(file_content, request.filename)
+        
+        if not text or len(text.strip()) == 0:
+            raise HTTPException(status_code=400, detail="No text could be extracted from the document")
+        
+        # Chunk the text
+        chunker = DocumentChunker(chunk_size=500, chunk_overlap=50)
+        chunks = chunker.chunk_text(text)
+        
+        if not chunks:
+            raise HTTPException(status_code=400, detail="Could not create chunks from document")
+        
+        # Initialize embedding client
+        embedding_client = EmbeddingClient(
+            provider=request.embedding_provider,
+            api_key=request.embedding_api_key,
+            model=request.embedding_model
+        )
+        
+        # Generate embeddings for all chunks
+        embeddings = embedding_client.embed_texts(chunks)
+        
+        # Generate document ID
+        doc_id = DocumentProcessor.generate_document_id(request.filename, text)
+        
+        # Create document object
+        document = {
+            "id": doc_id,
+            "filename": request.filename,
+            "text": text,
+            "chunks": chunks,
+            "embeddings": embeddings,
+            "upload_time": datetime.now().isoformat(),
+            "embedding_provider": request.embedding_provider,
+            "embedding_model": request.embedding_model or "default"
+        }
+        
+        # Store document
+        document_store.add_document(request.session_id, document)
+        
+        return {
+            "success": True,
+            "doc_id": doc_id,
+            "filename": request.filename,
+            "chunks": len(chunks),
+            "message": f"Document processed successfully with {len(chunks)} chunks"
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/rag/documents/{session_id}", response_model=DocumentListResponse)
+async def list_documents(session_id: str):
+    """List all documents for a session"""
+    try:
+        from document_processor import document_store
+        
+        documents = document_store.list_documents(session_id)
+        
+        return {
+            "documents": documents,
+            "total": len(documents)
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.delete("/api/rag/document")
+async def delete_document(request: DocumentDeleteRequest):
+    """Delete a document"""
+    try:
+        from document_processor import document_store
+        
+        success = document_store.delete_document(request.session_id, request.doc_id)
+        
+        if success:
+            return {"success": True, "message": "Document deleted successfully"}
+        else:
+            raise HTTPException(status_code=404, detail="Document not found")
+            
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.delete("/api/rag/documents/{session_id}")
+async def clear_documents(session_id: str):
+    """Clear all documents for a session"""
+    try:
+        from document_processor import document_store
+        
+        document_store.clear_session(session_id)
+        
+        return {"success": True, "message": "All documents cleared"}
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/rag/chat/stream")
+async def rag_chat_stream(request: RAGChatRequest):
+    """Stream chat responses with RAG enhancement"""
+    async def generate_stream():
+        try:
+            from cloud_providers import CloudProviderClient
+            from document_processor import document_store
+            from embedding_service import EmbeddingClient
+            
+            # Generate session ID if not provided
+            session_id = request.session_id or str(uuid.uuid4())
+            provider = request.provider or "nvidia"
+            model = request.model
+            
+            # Initialize session storage if needed
+            if session_id not in user_sessions:
+                user_sessions[session_id] = {
+                    "history": [],
+                    "provider": provider,
+                    "model": model
+                }
+            
+            session = user_sessions[session_id]
+            message = request.message
+            
+            # RAG Enhancement
+            context_chunks = []
+            if request.use_rag:
+                try:
+                    # Initialize embedding client for query
+                    embedding_api_key = request.embedding_api_key or request.api_key
+                    embedding_client = EmbeddingClient(
+                        provider=request.embedding_provider,
+                        api_key=embedding_api_key,
+                        model=request.embedding_model
+                    )
+                    
+                    # Embed the query
+                    query_embedding = embedding_client.embed_query(message)
+                    
+                    # Search for relevant chunks
+                    context_chunks = document_store.search_chunks(
+                        session_id=session_id,
+                        query_embedding=query_embedding,
+                        top_k=request.top_k,
+                        similarity_threshold=0.3
+                    )
+                    
+                    # Augment message with context if found
+                    if context_chunks:
+                        context_text = "\n\n".join([
+                            f"[From {chunk['document']}]\n{chunk['chunk']}"
+                            for chunk in context_chunks
+                        ])
+                        
+                        augmented_message = f"""Based on the following context, please answer the user's question.
+
+Context:
+{context_text}
+
+User Question: {message}
+
+Please provide a comprehensive answer based on the context provided. If the context doesn't contain relevant information, you can use your general knowledge."""
+                        
+                        message = augmented_message
+                        
+                        # Send RAG indicator
+                        rag_info = {
+                            'type': 'rag_info',
+                            'chunks_used': len(context_chunks),
+                            'sources': [chunk['document'] for chunk in context_chunks]
+                        }
+                        yield f"data: {json.dumps(rag_info)}\n\n"
+                
+                except Exception as rag_error:
+                    # If RAG fails, continue without it
+                    error_info = {
+                        'type': 'rag_warning',
+                        'message': f"RAG processing failed: {str(rag_error)}"
+                    }
+                    yield f"data: {json.dumps(error_info)}\n\n"
+            
+            # Create cloud provider client
+            client = CloudProviderClient(
+                provider=provider,
+                api_key=request.api_key,
+                model=model
+            )
+            
+            # Get history
+            history = []
+            if "history" in session:
+                for msg in session["history"]:
+                    history.append({
+                        "is_user": msg.get("role") == "user",
+                        "content": msg.get("content", "")
+                    })
+            
+            # Get response
+            full_response = client.chat(message, history=history)
+            
+            # Stream the response word by word
+            words = full_response.split()
+            for i, word in enumerate(words):
+                yield f"data: {json.dumps({'type': 'chunk', 'content': word + (' ' if i < len(words) - 1 else '')})}\n\n"
+                await asyncio.sleep(0.03)
+            
+            # Add to history (store original user message, not augmented)
+            session["history"].append({
+                "role": "user",
+                "content": request.message
+            })
+            
+            session["history"].append({
+                "role": "assistant",
+                "content": full_response
+            })
+            
+            # Send done signal with context info
+            done_data = {
+                'type': 'done',
+                'full_response': full_response,
+                'rag_used': request.use_rag and len(context_chunks) > 0,
+                'sources': [chunk['document'] for chunk in context_chunks] if context_chunks else []
+            }
+            yield f"data: {json.dumps(done_data)}\n\n"
+            
+        except Exception as e:
+            error_data = {
+                'type': 'error',
+                'error': str(e)
+            }
+            yield f"data: {json.dumps(error_data)}\n\n"
+    
+    return StreamingResponse(
+        generate_stream(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "X-Accel-Buffering": "no"
+        }
+    )
 
 
 if __name__ == "__main__":

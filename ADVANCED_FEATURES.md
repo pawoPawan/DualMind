@@ -458,7 +458,8 @@ All data stays on your device:
 | Dark Mode | ✅ | ✅ |
 | Custom Memory | ✅ | ✅ |
 | Chat History | ✅ | ✅ |
-| Document Q&A (RAG) | ✅ | ❌ |
+| Document Q&A (RAG) | ✅ | ✅ (NEW!) |
+| Embedding Model Choice | ❌ | ✅ (5 providers) |
 | Offline Support | ✅ | ❌ |
 
 ---

@@ -187,6 +187,8 @@ Make sure your phone and computer are on the **same WiFi network**.
 #### Cloud Mode (☁️)
 - ✅ **Multi-Cloud Providers** - Google, OpenAI, Anthropic, NVIDIA, Azure
 - ✅ **30+ AI Models** - GPT-4o, Claude 3.5, Gemini, Llama 3.1, and more
+- ✅ **📚 RAG Support (NEW!)** - Document Q&A with embedding model selection
+- ✅ **5 Embedding Providers** - OpenAI, Google, Cohere, Voyage, Hugging Face (free!)
 - ✅ **Dynamic Model Selection** - Choose optimal model per task
 - ✅ **Fast Responses** - Powered by cutting-edge AI infrastructure
 - ✅ **Secure API Keys** - Encrypted storage in browser localStorage
@@ -655,7 +657,8 @@ Updates are downloaded automatically when users open the app!
 
 ### 📚 Project Documentation
 - **[ADVANCED_FEATURES.md](ADVANCED_FEATURES.md)** - Advanced features guide
-- **[RAG_GUIDE.md](RAG_GUIDE.md)** - Document Q&A implementation
+- **[RAG_GUIDE.md](RAG_GUIDE.md)** - Document Q&A for Local Mode
+- **[CLOUD_RAG_GUIDE.md](CLOUD_RAG_GUIDE.md)** - Document Q&A for Cloud Mode (NEW!)
 - **[MOBILE_APP_PLAN.md](MOBILE_APP_PLAN.md)** - Mobile architecture
 - **[MOBILE_TESTING_GUIDE.md](MOBILE_TESTING_GUIDE.md)** - Mobile testing
 - **[EXPO_CONNECTION_GUIDE.md](EXPO_CONNECTION_GUIDE.md)** - Troubleshooting
