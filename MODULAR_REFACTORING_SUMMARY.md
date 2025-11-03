@@ -334,11 +334,10 @@ static/
 │   ├── CSS (mixed in)
 │   ├── JavaScript (mixed in)
 │   └── Configuration (mixed in)
-├── local_enhanced.html (1,100 lines) 💩
-│   ├── Duplicate HTML
-│   ├── Duplicate CSS
-│   └── Duplicate JavaScript
-└── cloud_rag_example.html
+└── local_enhanced.html (1,100 lines) 💩
+    ├── Duplicate HTML
+    ├── Duplicate CSS
+    └── Duplicate JavaScript
 ```
 
 **Problems:**
