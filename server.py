@@ -101,7 +101,16 @@ class EmbeddingProvidersResponse(BaseModel):
 # Routes
 @app.get("/local", response_class=HTMLResponse)
 async def local_mode():
-    """Serve the local browser-based inference UI with branding"""
+    """Serve the enhanced local browser-based inference UI"""
+    # Serve the enhanced modern UI
+    with open("static/local_enhanced.html", "r") as f:
+        html_template = f.read()
+    return html_template
+
+
+@app.get("/local/classic", response_class=HTMLResponse)
+async def local_mode_classic():
+    """Serve the classic local browser-based inference UI with branding"""
     # Read the template file
     with open("static/index_local.html", "r") as f:
         html_template = f.read()
