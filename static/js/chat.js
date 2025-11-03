@@ -46,6 +46,19 @@ export class ChatManager {
                 systemMessages.push({ role: 'system', content: chatContext });
             }
             
+            // Check if we have knowledge base documents and perform RAG
+            const { rag } = await import('./rag.js');
+            const relevantChunks = await rag.searchRelevantChunks(message, 3);
+            
+            if (relevantChunks.length > 0) {
+                let ragContext = "Here is relevant information from uploaded documents:\n\n";
+                relevantChunks.forEach((chunk, index) => {
+                    ragContext += `[From ${chunk.filename}]:\n${chunk.text}\n\n`;
+                });
+                ragContext += "Based on the above information and your knowledge, please answer the user's question.";
+                systemMessages.push({ role: 'system', content: ragContext });
+            }
+            
             const messages = systemMessages.length > 0 ?
                 [...systemMessages, ...this.chatHistory] :
                 this.chatHistory;

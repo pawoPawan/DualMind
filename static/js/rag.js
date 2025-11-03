@@ -12,12 +12,100 @@ export class RAGManager {
         this.knowledgeBase = [];
         this.embeddingModels = [];
         this.currentEmbeddingModel = 'Xenova/all-MiniLM-L6-v2';
+        this.embedder = null;
+        this.isEmbedderLoaded = false;
     }
     
     async initialize() {
         this.knowledgeBase = storage.getKnowledgeBase();
         this.currentEmbeddingModel = storage.getEmbeddingModel();
         await this.loadAvailableModels();
+        // Don't load embedder until needed to save resources
+    }
+    
+    async loadEmbedder() {
+        if (this.isEmbedderLoaded) return;
+        
+        try {
+            console.log('🔄 Loading embedding model...');
+            const { pipeline } = window.transformers;
+            this.embedder = await pipeline('feature-extraction', this.currentEmbeddingModel);
+            this.isEmbedderLoaded = true;
+            console.log('✅ Embedding model loaded!');
+        } catch (error) {
+            console.error('Error loading embedder:', error);
+            throw error;
+        }
+    }
+    
+    async embed(text) {
+        if (!this.isEmbedderLoaded) {
+            await this.loadEmbedder();
+        }
+        
+        try {
+            const output = await this.embedder(text, { pooling: 'mean', normalize: true });
+            return Array.from(output.data);
+        } catch (error) {
+            console.error('Error generating embedding:', error);
+            return null;
+        }
+    }
+    
+    cosineSimilarity(a, b) {
+        const dotProduct = a.reduce((sum, val, i) => sum + val * b[i], 0);
+        const magnitudeA = Math.sqrt(a.reduce((sum, val) => sum + val * val, 0));
+        const magnitudeB = Math.sqrt(b.reduce((sum, val) => sum + val * val, 0));
+        return dotProduct / (magnitudeA * magnitudeB);
+    }
+    
+    chunkText(text, chunkSize = 500, overlap = 100) {
+        const chunks = [];
+        let start = 0;
+        
+        while (start < text.length) {
+            const end = Math.min(start + chunkSize, text.length);
+            chunks.push(text.substring(start, end));
+            start += chunkSize - overlap;
+        }
+        
+        return chunks;
+    }
+    
+    async searchRelevantChunks(query, topK = 3) {
+        if (this.knowledgeBase.length === 0) {
+            return [];
+        }
+        
+        try {
+            // Embed the query
+            const queryEmbedding = await this.embed(query);
+            if (!queryEmbedding) return [];
+            
+            // Calculate similarities with all chunks
+            const results = [];
+            
+            for (const doc of this.knowledgeBase) {
+                if (doc.embeddings && doc.chunks) {
+                    for (let i = 0; i < doc.chunks.length; i++) {
+                        const similarity = this.cosineSimilarity(queryEmbedding, doc.embeddings[i]);
+                        results.push({
+                            text: doc.chunks[i],
+                            similarity: similarity,
+                            filename: doc.name
+                        });
+                    }
+                }
+            }
+            
+            // Sort by similarity and return top K
+            results.sort((a, b) => b.similarity - a.similarity);
+            return results.slice(0, topK);
+            
+        } catch (error) {
+            console.error('Error searching chunks:', error);
+            return [];
+        }
     }
     
     async loadAvailableModels() {
@@ -43,23 +131,63 @@ export class RAGManager {
         const files = event.target.files;
         if (!files || files.length === 0) return;
         
-        for (const file of files) {
-            try {
-                const text = await file.text();
-                this.knowledgeBase.push({
-                    name: file.name,
-                    content: text,
-                    timestamp: Date.now()
-                });
-            } catch (error) {
-                console.error('Error reading file:', error);
-                ui.showNotification(`Error reading ${file.name}`);
-            }
-        }
+        ui.showLoadingIndicator('Processing documents...');
         
-        storage.saveKnowledgeBase(this.knowledgeBase);
-        this.displayUploadedFiles();
-        ui.showNotification(`${files.length} file(s) uploaded successfully`);
+        try {
+            // Ensure embedder is loaded
+            await this.loadEmbedder();
+            
+            for (const file of files) {
+                try {
+                    ui.updateLoadingProgress(0, `Processing ${file.name}...`);
+                    
+                    const text = await file.text();
+                    
+                    // Split into chunks
+                    ui.updateLoadingProgress(30, `Chunking ${file.name}...`);
+                    const chunks = this.chunkText(text);
+                    
+                    // Generate embeddings for all chunks
+                    ui.updateLoadingProgress(50, `Generating embeddings for ${file.name}...`);
+                    const embeddings = [];
+                    
+                    for (let i = 0; i < chunks.length; i++) {
+                        const embedding = await this.embed(chunks[i]);
+                        if (embedding) {
+                            embeddings.push(embedding);
+                        }
+                        
+                        // Update progress
+                        const progress = 50 + (i / chunks.length) * 40;
+                        ui.updateLoadingProgress(progress, `Embedding chunk ${i + 1}/${chunks.length}...`);
+                    }
+                    
+                    this.knowledgeBase.push({
+                        name: file.name,
+                        content: text,
+                        chunks: chunks,
+                        embeddings: embeddings,
+                        timestamp: Date.now()
+                    });
+                    
+                    ui.updateLoadingProgress(100, `${file.name} processed!`);
+                    
+                } catch (error) {
+                    console.error('Error processing file:', error);
+                    alert(`Error processing ${file.name}: ${error.message}`);
+                }
+            }
+            
+            storage.saveKnowledgeBase(this.knowledgeBase);
+            this.displayUploadedFiles();
+            alert(`✅ ${files.length} file(s) processed successfully!`);
+            
+        } catch (error) {
+            console.error('Error uploading files:', error);
+            alert(`Error: ${error.message}`);
+        } finally {
+            ui.hideLoadingIndicator();
+        }
     }
     
     displayUploadedFiles() {

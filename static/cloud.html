@@ -95,6 +95,7 @@
             <!-- Input -->
             <div class="chat-input-container">
                 <div class="input-wrapper">
+                    <span class="attach-icon" onclick="cloudApp.openKnowledgeBase()" title="Add documents">📎</span>
                     <textarea 
                         class="chat-input" 
                         id="userInput" 
@@ -241,6 +242,27 @@
                     <button class="save-btn" onclick="cloudApp.createNewChat()">✅ Create</button>
                     <button class="cancel-btn" onclick="cloudApp.closeNewChatModal()">❌ Cancel</button>
                 </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Knowledge Base Modal -->
+    <div class="modal" id="knowledgeModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📚 Knowledge Base</h2>
+                <button class="close-modal" onclick="cloudApp.closeKnowledgeBase()">×</button>
+            </div>
+            <div id="knowledgeContent">
+                <p style="color: #999; margin-bottom: 16px; padding: 0 20px;">
+                    Upload documents to enhance AI responses with your own data. Files will be processed for semantic search.
+                </p>
+                <input type="file" id="fileInput" multiple accept=".txt,.md,.pdf,.doc,.docx" style="display: none;" 
+                       onchange="cloudApp.handleFileUpload(event)">
+                <button class="new-chat-btn" onclick="document.getElementById('fileInput').click()" style="margin: 0 20px;">
+                    📄 Upload Documents
+                </button>
+                <div id="uploadedFiles" style="margin-top: 16px; padding: 0 20px;"></div>
             </div>
         </div>
     </div>

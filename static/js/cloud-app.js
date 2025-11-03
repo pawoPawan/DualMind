@@ -5,11 +5,13 @@
 
 import { storage } from './storage.js';
 import { ui } from './ui.js';
+import { rag } from './rag.js';
 
 class CloudModeApp {
     constructor() {
         this.storage = storage;
         this.ui = ui;
+        this.rag = rag;
         this.chatHistory = [];
         this.currentChatId = null;
         this.currentChatTitle = null;
@@ -27,6 +29,9 @@ class CloudModeApp {
         
         // Initialize UI
         this.ui.initialize();
+        
+        // Initialize RAG
+        await this.rag.initialize();
         
         // Load saved settings
         this.loadSettings();
@@ -207,6 +212,18 @@ class CloudModeApp {
             }
             if (chatContext) {
                 systemMessages.push({ role: 'system', content: chatContext });
+            }
+            
+            // Check if we have knowledge base documents and perform RAG
+            const relevantChunks = await this.rag.searchRelevantChunks(message, 3);
+            
+            if (relevantChunks.length > 0) {
+                let ragContext = "Here is relevant information from uploaded documents:\n\n";
+                relevantChunks.forEach((chunk, index) => {
+                    ragContext += `[From ${chunk.filename}]:\n${chunk.text}\n\n`;
+                });
+                ragContext += "Based on the above information and your knowledge, please answer the user's question.";
+                systemMessages.push({ role: 'system', content: ragContext });
             }
             
             const messages = systemMessages.length > 0 ?
@@ -521,6 +538,23 @@ class CloudModeApp {
     
     switchToLocalMode() {
         window.location.href = '/local';
+    }
+    
+    // Knowledge Base Management
+    openKnowledgeBase() {
+        this.rag.openKnowledgeBase();
+    }
+    
+    closeKnowledgeBase() {
+        this.rag.closeKnowledgeBase();
+    }
+    
+    async handleFileUpload(event) {
+        await this.rag.handleFileUpload(event);
+    }
+    
+    removeDocument(index) {
+        this.rag.removeDocument(index);
     }
 }
 
