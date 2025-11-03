@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DualMind AI - Cloud Mode</title>
+    
+    <!-- External Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/marked@11.1.1/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/core.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/languages/javascript.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/languages/python.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/languages/java.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/languages/cpp.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/languages/xml.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/languages/css.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/languages/json.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/languages/bash.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github-dark.min.css">
+    
+    <!-- DualMind Styles -->
+    <link rel="stylesheet" href="/static/css/local.css">
+    
+    <script>
+        // Configure marked for code highlighting
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.marked) {
+                marked.setOptions({
+                    highlight: function(code, lang) {
+                        if (lang && hljs.getLanguage(lang)) {
+                            try {
+                                return hljs.highlight(code, { language: lang }).value;
+                            } catch (err) {}
+                        }
+                        return hljs.highlightAuto(code).value;
+                    },
+                    breaks: true,
+                    gfm: true
+                });
+            }
+        });
+    </script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <button class="new-chat-btn" onclick="cloudApp.openNewChatModal()" title="Create new chat">
+                    <span>💬</span>
+                    <span>New chat</span>
+                </button>
+            </div>
+            
+            <div class="chat-history">
+                <div class="chat-history-title">Your chats</div>
+                <div id="chatHistoryList"></div>
+            </div>
+            
+            <div class="sidebar-footer">
+                <div class="user-avatar">DM</div>
+                <div class="user-name">DualMind User</div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Header -->
+            <div class="chat-header">
+                <div class="model-selector" onclick="cloudApp.openModelSelector()">
+                    <div class="model-icon">☁️</div>
+                    <div class="model-info">
+                        <h3 id="currentModelName">Select Provider & Model</h3>
+                        <p id="currentModelDesc">Click to choose AI provider</p>
+                    </div>
+                </div>
+                
+                <div class="header-actions">
+                    <button class="header-btn" onclick="cloudApp.openSettings()" title="Settings">⚙️</button>
+                    <button class="header-btn" onclick="cloudApp.exportChat()" title="Export chat">⬇️</button>
+                    <button class="header-btn" onclick="cloudApp.changeApiKey()" title="Change API key">🔑</button>
+                    <button class="header-btn" onclick="cloudApp.switchToLocalMode()" title="Local Mode">🔒</button>
+                </div>
+            </div>
+            
+            <!-- Messages -->
+            <div class="chat-messages" id="chatMessages">
+                <div class="empty-state">
+                    <div class="empty-state-icon">☁️</div>
+                    <h1>How can I help you today?</h1>
+                    <p>Select a provider and model to start chatting. Your conversations are powered by cloud AI services.</p>
+                </div>
+            </div>
+            
+            <!-- Input -->
+            <div class="chat-input-container">
+                <div class="input-wrapper">
+                    <textarea 
+                        class="chat-input" 
+                        id="userInput" 
+                        placeholder="Enter your prompt here"
+                        rows="1"
+                    ></textarea>
+                    <div class="input-actions">
+                        <button class="input-btn" id="voiceBtn" onclick="cloudApp.toggleVoice()" title="Voice input">🎤</button>
+                        <button class="input-btn primary" id="sendBtn" onclick="cloudApp.sendMessage()" disabled title="Send">➤</button>
+                    </div>
+                </div>
+                <div class="input-hint">
+                    Press Enter to send, Shift+Enter for new line
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Provider & Model Selector Modal -->
+    <div class="modal" id="modelModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Select Provider & Model</h2>
+                <button class="close-modal" onclick="cloudApp.closeModelSelector()">×</button>
+            </div>
+            <div style="padding: 20px;">
+                <label class="setting-label">AI Provider</label>
+                <select id="providerSelect" class="setting-textarea" style="padding: 12px; height: auto;" onchange="cloudApp.loadModelsForProvider()">
+                    <option value="">Select provider...</option>
+                    <option value="google">🔷 Google AI (Gemini)</option>
+                    <option value="openai">🟢 OpenAI (GPT)</option>
+                    <option value="anthropic">🟣 Anthropic (Claude)</option>
+                    <option value="nvidia">🟩 NVIDIA AI</option>
+                    <option value="azure">🔵 Azure OpenAI</option>
+                </select>
+                
+                <div id="modelListContainer" style="margin-top: 20px; display: none;">
+                    <label class="setting-label">AI Model</label>
+                    <div class="model-list" id="modelList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- API Key Modal -->
+    <div class="modal active" id="apiKeyModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🔑 Enter API Key</h2>
+            </div>
+            <div style="padding: 20px;">
+                <p style="color: #999; margin-bottom: 16px;">
+                    Enter your API key for the selected provider. Keys are stored securely in your browser.
+                </p>
+                <input 
+                    type="password" 
+                    id="apiKeyInput" 
+                    class="setting-textarea"
+                    placeholder="Enter your API key..."
+                    style="width: 100%; padding: 12px; margin: 10px 0;"
+                >
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button class="save-btn" onclick="cloudApp.saveApiKey()">✅ Save & Continue</button>
+                </div>
+                <p style="font-size: 12px; color: #999; margin-top: 16px;">
+                    Don't have an API key? Get one free from:
+                    <br>• <a href="https://aistudio.google.com/apikey" target="_blank">Google AI</a>
+                    <br>• <a href="https://platform.openai.com/api-keys" target="_blank">OpenAI</a>
+                    <br>• <a href="https://console.anthropic.com/" target="_blank">Anthropic</a>
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Settings Modal -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>⚙️ Settings</h2>
+                <button class="close-modal" onclick="cloudApp.closeSettings()">×</button>
+            </div>
+            <div class="settings-content">
+                <div class="setting-group">
+                    <label class="setting-label">
+                        <span>🌙 Dark Mode</span>
+                        <label class="switch">
+                            <input type="checkbox" id="darkModeToggle" onchange="cloudApp.toggleDarkMode()">
+                            <span class="slider"></span>
+                        </label>
+                    </label>
+                </div>
+                
+                <div class="setting-group">
+                    <label class="setting-label">💭 Custom Memory</label>
+                    <textarea 
+                        id="customMemoryInput" 
+                        class="setting-textarea"
+                        placeholder="Add custom instructions that will be included in every conversation (e.g., 'You are a helpful coding assistant')"
+                        rows="4"
+                    ></textarea>
+                    <button class="save-btn" onclick="cloudApp.saveCustomMemory()">💾 Save Memory</button>
+                </div>
+                
+                <div class="setting-group">
+                    <label class="setting-label">📁 Chat Context (Current Chat)</label>
+                    <textarea 
+                        id="chatContextInput" 
+                        class="setting-textarea"
+                        placeholder="Add context/instructions specific to this chat (e.g., 'Focus on Python programming')"
+                        rows="3"
+                    ></textarea>
+                    <button class="save-btn" onclick="cloudApp.saveChatContext()">💾 Save Context</button>
+                    <p style="font-size: 12px; color: #999; margin-top: 8px;">
+                        This context applies only to the current chat session
+                    </p>
+                </div>
+                
+                <div class="setting-group">
+                    <button class="danger-btn" onclick="cloudApp.clearAllChats()">
+                        🗑️ Clear All Chat History
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- New Chat Modal -->
+    <div class="modal" id="newChatModal">
+        <div class="modal-content small">
+            <div class="modal-header">
+                <h2>💬 New Chat</h2>
+                <button class="close-modal" onclick="cloudApp.closeNewChatModal()">×</button>
+            </div>
+            <div style="padding: 20px;">
+                <label class="setting-label">Chat Name (Optional)</label>
+                <input 
+                    type="text" 
+                    id="newChatNameInput" 
+                    class="chat-name-input"
+                    placeholder="Leave empty to use first message"
+                    style="width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px;"
+                >
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button class="save-btn" onclick="cloudApp.createNewChat()">✅ Create</button>
+                    <button class="cancel-btn" onclick="cloudApp.closeNewChatModal()">❌ Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Cloud Mode Application Script -->
+    <script type="module" src="/static/js/cloud-app.js"></script>
+</body>
+</html>
+

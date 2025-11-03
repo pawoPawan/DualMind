@@ -110,7 +110,15 @@ async def local_mode():
 
 @app.get("/cloud", response_class=HTMLResponse)
 async def cloud_mode():
-    """Serve the Cloud Mode UI with provider selection"""
+    """Serve the modular cloud browser-based inference UI"""
+    # Serve the consolidated modular UI
+    with open("static/cloud.html", "r") as f:
+        html_template = f.read()
+    return html_template
+
+@app.get("/cloud/legacy", response_class=HTMLResponse)
+async def cloud_mode_legacy():
+    """Serve the legacy Cloud Mode UI with provider selection"""
     html_template = """
 <!DOCTYPE html>
 <html lang="en">

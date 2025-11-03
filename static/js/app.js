@@ -161,7 +161,7 @@ class DualMindApp {
         const input = document.getElementById('customMemoryInput');
         if (input) {
             this.storage.saveCustomMemory(input.value);
-            this.ui.showNotification('✅ Custom memory saved!');
+            alert('✅ Custom memory saved!');
         }
     }
     
@@ -172,41 +172,42 @@ class DualMindApp {
             if (this.chat.currentChatId) {
                 this.storage.updateConversationContext(this.chat.currentChatId, input.value);
             }
-            this.ui.showNotification('✅ Chat context saved!');
+            alert('✅ Chat context saved!');
         }
     }
     
     clearAllChats() {
-        if (this.ui.showConfirm('Are you sure you want to delete all chat history? This action cannot be undone.')) {
+        if (confirm('Are you sure you want to delete all chat history? This action cannot be undone.')) {
             this.storage.clearAllConversations();
             this.chat.updateChatHistoryUI();
-            this.ui.showNotification('✅ All chats cleared!');
+            alert('✅ All chats cleared!');
         }
     }
     
     async renameChat(chatId) {
         const conv = this.storage.getConversation(chatId);
         if (conv) {
-            const newTitle = await this.ui.showPrompt('Rename Chat', 'Enter new name:', conv.title);
+            const newTitle = prompt('Enter new name:', conv.title);
             if (newTitle && newTitle.trim()) {
                 this.storage.renameConversation(chatId, newTitle.trim());
                 this.chat.updateChatHistoryUI();
                 if (this.chat.currentChatId === chatId) {
                     this.chat.currentChatTitle = newTitle.trim();
                 }
-                this.ui.showNotification('✅ Chat renamed!');
+                alert('✅ Chat renamed!');
             }
         }
     }
     
     deleteChat(chatId) {
-        if (this.ui.showConfirm('Are you sure you want to delete this chat?')) {
+        if (confirm('Are you sure you want to delete this chat?')) {
             this.storage.deleteConversation(chatId);
             this.chat.updateChatHistoryUI();
             if (this.chat.currentChatId === chatId) {
                 this.chat.startNewChat();
             }
-            this.ui.showNotification('✅ Chat deleted!');
+            // Show notification only once
+            alert('✅ Chat deleted!');
         }
     }
     
@@ -226,7 +227,7 @@ class DualMindApp {
         this.chat.startNewChat(customName);
         this.closeNewChatModal();
         if (customName) {
-            this.ui.showNotification(`✅ New chat "${customName}" created!`);
+            alert(`✅ New chat "${customName}" created!`);
         }
     }
     
