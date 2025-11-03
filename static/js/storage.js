@@ -16,21 +16,34 @@ export class StorageManager {
     }
     
     // Chat History
-    saveConversation(messages) {
+    saveConversation(messages, customTitle = null, chatId = null, context = null) {
         if (!messages || messages.length === 0) return;
         
         const conversations = this.getAllConversations();
-        const title = messages[0]?.content?.substring(0, 50) || 'New Chat';
-        const timestamp = Date.now();
+        const title = customTitle || messages[0]?.content?.substring(0, 50) || 'New Chat';
+        const timestamp = chatId || Date.now();
         
-        conversations.unshift({
+        // Check if conversation exists
+        const existingIndex = conversations.findIndex(c => c.id === timestamp);
+        
+        const conversation = {
             id: timestamp,
             title: title,
             messages: messages,
-            timestamp: timestamp
-        });
+            timestamp: timestamp,
+            context: context || null
+        };
+        
+        if (existingIndex >= 0) {
+            // Update existing conversation
+            conversations[existingIndex] = conversation;
+        } else {
+            // Add new conversation
+            conversations.unshift(conversation);
+        }
         
         localStorage.setItem(this.KEYS.CHATS, JSON.stringify(conversations.slice(0, 50)));
+        return timestamp;
     }
     
     getAllConversations() {
@@ -47,6 +60,24 @@ export class StorageManager {
         const conversations = this.getAllConversations();
         const filtered = conversations.filter(c => c.id !== id);
         localStorage.setItem(this.KEYS.CHATS, JSON.stringify(filtered));
+    }
+    
+    renameConversation(id, newTitle) {
+        const conversations = this.getAllConversations();
+        const conv = conversations.find(c => c.id === id);
+        if (conv) {
+            conv.title = newTitle;
+            localStorage.setItem(this.KEYS.CHATS, JSON.stringify(conversations));
+        }
+    }
+    
+    updateConversationContext(id, context) {
+        const conversations = this.getAllConversations();
+        const conv = conversations.find(c => c.id === id);
+        if (conv) {
+            conv.context = context;
+            localStorage.setItem(this.KEYS.CHATS, JSON.stringify(conversations));
+        }
     }
     
     clearAllConversations() {

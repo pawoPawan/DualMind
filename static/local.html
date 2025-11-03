@@ -50,7 +50,7 @@
         <!-- Sidebar -->
         <div class="sidebar">
             <div class="sidebar-header">
-                <button class="new-chat-btn" onclick="dualmind.startNewChat()">
+                <button class="new-chat-btn" onclick="dualmind.openNewChatModal()" title="Create new chat">
                     <span>💬</span>
                     <span>New chat</span>
                 </button>
@@ -145,6 +145,88 @@
                     📄 Upload Documents
                 </button>
                 <div id="uploadedFiles" style="margin-top: 16px;"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Settings Modal -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>⚙️ Settings</h2>
+                <button class="close-modal" onclick="dualmind.closeSettings()">×</button>
+            </div>
+            <div class="settings-content">
+                <div class="setting-group">
+                    <label class="setting-label">
+                        <span>🌙 Dark Mode</span>
+                        <label class="switch">
+                            <input type="checkbox" id="darkModeToggle" onchange="dualmind.toggleDarkMode()">
+                            <span class="slider"></span>
+                        </label>
+                    </label>
+                </div>
+                
+                <div class="setting-group">
+                    <label class="setting-label">💭 Custom Memory</label>
+                    <textarea 
+                        id="customMemoryInput" 
+                        class="setting-textarea"
+                        placeholder="Add custom instructions that will be included in every conversation (e.g., 'You are a helpful coding assistant')"
+                        rows="4"
+                    ></textarea>
+                    <button class="save-btn" onclick="dualmind.saveCustomMemory()">💾 Save Memory</button>
+                </div>
+                
+                <div class="setting-group">
+                    <label class="setting-label">📁 Chat Context (Current Chat)</label>
+                    <textarea 
+                        id="chatContextInput" 
+                        class="setting-textarea"
+                        placeholder="Add context/instructions specific to this chat (e.g., 'Focus on Python programming')"
+                        rows="3"
+                    ></textarea>
+                    <button class="save-btn" onclick="dualmind.saveChatContext()">💾 Save Context</button>
+                    <p style="font-size: 12px; color: #999; margin-top: 8px;">
+                        This context applies only to the current chat session
+                    </p>
+                </div>
+                
+                <div class="setting-group">
+                    <button class="danger-btn" onclick="dualmind.clearAllChats()">
+                        🗑️ Clear All Chat History
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Chat Actions Menu (Context Menu) -->
+    <div class="context-menu" id="chatContextMenu" style="display: none;">
+        <button class="context-menu-item" onclick="dualmind.renameChatPrompt()">✏️ Rename</button>
+        <button class="context-menu-item" onclick="dualmind.deleteChatPrompt()">🗑️ Delete</button>
+    </div>
+    
+    <!-- New Chat Modal -->
+    <div class="modal" id="newChatModal">
+        <div class="modal-content small">
+            <div class="modal-header">
+                <h2>💬 New Chat</h2>
+                <button class="close-modal" onclick="dualmind.closeNewChatModal()">×</button>
+            </div>
+            <div style="padding: 20px;">
+                <label class="setting-label">Chat Name (Optional)</label>
+                <input 
+                    type="text" 
+                    id="newChatNameInput" 
+                    class="chat-name-input"
+                    placeholder="Leave empty to use first message"
+                    style="width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px;"
+                >
+                <div style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button class="save-btn" onclick="dualmind.createNewChat()">✅ Create</button>
+                    <button class="cancel-btn" onclick="dualmind.closeNewChatModal()">❌ Cancel</button>
+                </div>
             </div>
         </div>
     </div>

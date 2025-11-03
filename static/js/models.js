@@ -73,7 +73,10 @@ export class ModelManager {
     async selectModel(model) {
         this.closeModelSelector();
         
-        ui.updateModelDisplay('Loading...', 'Downloading model...');
+        // Disable input during model download
+        ui.setInputEnabled(false);
+        ui.showLoadingIndicator('Downloading model...');
+        ui.updateModelDisplay('Loading...', 'Preparing to download...');
         
         try {
             if (!window.CreateMLCEngine) {
@@ -82,22 +85,32 @@ export class ModelManager {
             
             config.engine = await window.CreateMLCEngine(model.id, {
                 initProgressCallback: (progress) => {
-                    ui.updateModelDisplay('Loading...', progress.text || 'Downloading...');
+                    const progressText = progress.text || 'Downloading...';
+                    const percentage = progress.progress ? Math.round(progress.progress * 100) : 0;
+                    
+                    // Update loading indicator with progress
+                    ui.updateLoadingProgress(percentage, progressText);
+                    ui.updateModelDisplay('Loading...', progressText);
                 }
             });
             
             config.currentModel = model.id;
             storage.saveCurrentModel(model.id);
             
+            // Hide loading indicator and enable input
+            ui.hideLoadingIndicator();
             ui.updateModelDisplay(model.name, model.desc);
             ui.setInputEnabled(true);
             
             console.log('Model loaded successfully:', model.id);
+            ui.showNotification('✅ Model loaded successfully! You can start chatting now.');
             
         } catch (error) {
             console.error('Error loading model:', error);
+            ui.hideLoadingIndicator();
             ui.updateModelDisplay('Error', 'Failed to load model');
-            ui.showNotification('Failed to load model. Please try again.');
+            ui.setInputEnabled(false);
+            ui.showNotification('❌ Failed to load model. Please try again.');
         }
     }
 }

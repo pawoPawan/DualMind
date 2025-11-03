@@ -10,6 +10,9 @@ import { config } from './config.js';
 export class ChatManager {
     constructor() {
         this.chatHistory = [];
+        this.currentChatId = null;
+        this.currentChatTitle = null;
+        this.currentChatContext = null;
     }
     
     async sendMessage(message) {
@@ -31,10 +34,20 @@ export class ChatManager {
         try {
             let fullResponse = '';
             
-            // Get custom memory if any
+            // Get custom memory and chat context
             const customMemory = storage.getCustomMemory();
-            const messages = customMemory ? 
-                [{ role: 'system', content: customMemory }, ...this.chatHistory] :
+            const chatContext = this.currentChatContext || '';
+            
+            let systemMessages = [];
+            if (customMemory) {
+                systemMessages.push({ role: 'system', content: customMemory });
+            }
+            if (chatContext) {
+                systemMessages.push({ role: 'system', content: chatContext });
+            }
+            
+            const messages = systemMessages.length > 0 ?
+                [...systemMessages, ...this.chatHistory] :
                 this.chatHistory;
             
             // Generate response
@@ -59,7 +72,12 @@ export class ChatManager {
             ui.addMessageActions(agentMessageId);
             
             // Save conversation
-            storage.saveConversation(this.chatHistory);
+            this.currentChatId = storage.saveConversation(
+                this.chatHistory, 
+                this.currentChatTitle, 
+                this.currentChatId,
+                this.currentChatContext
+            );
             this.updateChatHistoryUI();
             
         } catch (error) {
@@ -93,13 +111,21 @@ export class ChatManager {
         }
     }
     
-    startNewChat() {
+    startNewChat(customTitle = null) {
         if (this.chatHistory.length > 0) {
-            storage.saveConversation(this.chatHistory);
+            storage.saveConversation(
+                this.chatHistory, 
+                this.currentChatTitle, 
+                this.currentChatId,
+                this.currentChatContext
+            );
             this.updateChatHistoryUI();
         }
         
         this.chatHistory = [];
+        this.currentChatId = null;
+        this.currentChatTitle = customTitle;
+        this.currentChatContext = null;
         ui.clearMessages();
         ui.showEmptyState();
     }
@@ -108,6 +134,10 @@ export class ChatManager {
         const conv = storage.getConversation(id);
         if (conv) {
             this.chatHistory = conv.messages;
+            this.currentChatId = conv.id;
+            this.currentChatTitle = conv.title;
+            this.currentChatContext = conv.context || null;
+            
             ui.clearMessages();
             ui.hideEmptyState();
             

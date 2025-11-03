@@ -133,8 +133,101 @@ class DualMindApp {
     }
     
     openSettings() {
-        // TODO: Implement settings panel
-        this.ui.showNotification('Settings panel coming soon!');
+        // Load current settings
+        const darkMode = this.storage.getDarkMode();
+        const customMemory = this.storage.getCustomMemory();
+        const chatContext = this.chat.currentChatContext || '';
+        
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const customMemoryInput = document.getElementById('customMemoryInput');
+        const chatContextInput = document.getElementById('chatContextInput');
+        
+        if (darkModeToggle) darkModeToggle.checked = darkMode;
+        if (customMemoryInput) customMemoryInput.value = customMemory;
+        if (chatContextInput) chatContextInput.value = chatContext;
+        
+        this.ui.showModal('settingsModal');
+    }
+    
+    closeSettings() {
+        this.ui.hideModal('settingsModal');
+    }
+    
+    toggleDarkMode() {
+        this.ui.toggleTheme();
+    }
+    
+    saveCustomMemory() {
+        const input = document.getElementById('customMemoryInput');
+        if (input) {
+            this.storage.saveCustomMemory(input.value);
+            this.ui.showNotification('✅ Custom memory saved!');
+        }
+    }
+    
+    saveChatContext() {
+        const input = document.getElementById('chatContextInput');
+        if (input) {
+            this.chat.currentChatContext = input.value;
+            if (this.chat.currentChatId) {
+                this.storage.updateConversationContext(this.chat.currentChatId, input.value);
+            }
+            this.ui.showNotification('✅ Chat context saved!');
+        }
+    }
+    
+    clearAllChats() {
+        if (this.ui.showConfirm('Are you sure you want to delete all chat history? This action cannot be undone.')) {
+            this.storage.clearAllConversations();
+            this.chat.updateChatHistoryUI();
+            this.ui.showNotification('✅ All chats cleared!');
+        }
+    }
+    
+    async renameChat(chatId) {
+        const conv = this.storage.getConversation(chatId);
+        if (conv) {
+            const newTitle = await this.ui.showPrompt('Rename Chat', 'Enter new name:', conv.title);
+            if (newTitle && newTitle.trim()) {
+                this.storage.renameConversation(chatId, newTitle.trim());
+                this.chat.updateChatHistoryUI();
+                if (this.chat.currentChatId === chatId) {
+                    this.chat.currentChatTitle = newTitle.trim();
+                }
+                this.ui.showNotification('✅ Chat renamed!');
+            }
+        }
+    }
+    
+    deleteChat(chatId) {
+        if (this.ui.showConfirm('Are you sure you want to delete this chat?')) {
+            this.storage.deleteConversation(chatId);
+            this.chat.updateChatHistoryUI();
+            if (this.chat.currentChatId === chatId) {
+                this.chat.startNewChat();
+            }
+            this.ui.showNotification('✅ Chat deleted!');
+        }
+    }
+    
+    openNewChatModal() {
+        const input = document.getElementById('newChatNameInput');
+        if (input) input.value = '';
+        this.ui.showModal('newChatModal');
+    }
+    
+    closeNewChatModal() {
+        this.ui.hideModal('newChatModal');
+    }
+    
+    createNewChat() {
+        const input = document.getElementById('newChatNameInput');
+        const customName = input && input.value.trim() ? input.value.trim() : null;
+        this.chat.startNewChat(customName);
+        this.closeNewChatModal();
+        if (customName) {
+            this.ui.showNotification(`✅ New chat "${customName}" created!`);
+        }
     }
     
     switchToCloudMode() {

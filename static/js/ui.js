@@ -183,8 +183,21 @@ export class UIManager {
         conversations.forEach(conv => {
             const item = document.createElement('div');
             item.className = 'chat-item';
-            item.textContent = conv.title;
-            item.onclick = () => window.dualmind.loadConversation(conv.id);
+            
+            const textSpan = document.createElement('span');
+            textSpan.className = 'chat-item-text';
+            textSpan.textContent = conv.title;
+            textSpan.onclick = () => window.dualmind.loadConversation(conv.id);
+            
+            const actions = document.createElement('div');
+            actions.className = 'chat-item-actions';
+            actions.innerHTML = `
+                <button class="chat-action-btn" onclick="event.stopPropagation(); window.dualmind.renameChat(${conv.id})" title="Rename chat">✏️</button>
+                <button class="chat-action-btn" onclick="event.stopPropagation(); window.dualmind.deleteChat(${conv.id})" title="Delete chat">🗑️</button>
+            `;
+            
+            item.appendChild(textSpan);
+            item.appendChild(actions);
             this.elements.chatHistoryList.appendChild(item);
         });
     }
@@ -212,6 +225,52 @@ export class UIManager {
         if (this.elements.sidebar) {
             this.elements.sidebar.classList.toggle('open');
         }
+    }
+    
+    showLoadingIndicator(message = 'Downloading model...') {
+        let indicator = document.getElementById('loadingIndicator');
+        if (!indicator) {
+            indicator = document.createElement('div');
+            indicator.id = 'loadingIndicator';
+            indicator.className = 'model-loading';
+            document.body.appendChild(indicator);
+        }
+        indicator.innerHTML = `
+            <div>${message}</div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+            </div>
+        `;
+        indicator.style.display = 'block';
+    }
+    
+    updateLoadingProgress(percentage, message = '') {
+        const indicator = document.getElementById('loadingIndicator');
+        const fill = document.getElementById('progressFill');
+        if (indicator && fill) {
+            if (message) {
+                indicator.querySelector('div:first-child').textContent = message;
+            }
+            fill.style.width = percentage + '%';
+        }
+    }
+    
+    hideLoadingIndicator() {
+        const indicator = document.getElementById('loadingIndicator');
+        if (indicator) {
+            indicator.style.display = 'none';
+        }
+    }
+    
+    showPrompt(title, message, defaultValue = '') {
+        return new Promise((resolve) => {
+            const result = prompt(message, defaultValue);
+            resolve(result);
+        });
+    }
+    
+    showConfirm(message) {
+        return confirm(message);
     }
 }
 
