@@ -133,6 +133,12 @@ Visit our GitHub repository for:
 • Bug reports
 
 Transform your browsing experience with intelligent AI assistance - install DualMind today!
+
+---
+
+**Made with ❤️ by Pawan Kumar**
+Connect: https://www.linkedin.com/in/YOUR_LINKEDIN_USERNAME/
+GitHub: https://github.com/pawoPawan/DualMind
 ```
 
 #### Privacy Policy (Required)
@@ -142,12 +148,22 @@ You'll need to create a privacy policy. I'll help you with this below.
 
 **Homepage URL** (Optional):
 ```
+https://www.linkedin.com/in/YOUR_LINKEDIN_USERNAME/
+```
+
+**GitHub Repository**:
+```
 https://github.com/pawoPawan/DualMind
 ```
 
 **Support Email** (Required):
 ```
 your-email@example.com
+```
+
+**Creator**:
+```
+Pawan Kumar
 ```
 
 **Single Purpose Description**:

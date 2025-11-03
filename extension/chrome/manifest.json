@@ -3,7 +3,8 @@
   "name": "DualMind AI Assistant",
   "version": "1.0.0",
   "description": "AI chat assistant with Local Mode (WebLLM) and Cloud Mode (Google, OpenAI, Anthropic, NVIDIA, Azure)",
-  "author": "DualMind Team",
+  "author": "Pawan Kumar",
+  "homepage_url": "https://www.linkedin.com/in/YOUR_LINKEDIN_USERNAME/",
   
   "icons": {
     "16": "icons/icon16.png",
