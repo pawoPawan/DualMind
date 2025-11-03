@@ -303,11 +303,7 @@
                 <div style="flex: 1;">
                     <label class="config-label">Embedding Provider</label>
                     <select id="embeddingProviderSelect" class="config-select" onchange="loadEmbeddingModels()">
-                        <option value="openai">OpenAI (Recommended)</option>
-                        <option value="google">Google AI</option>
-                        <option value="cohere">Cohere</option>
-                        <option value="voyage">Voyage AI</option>
-                        <option value="huggingface">Hugging Face (Free)</option>
+                        <option value="">Loading providers...</option>
                     </select>
                 </div>
             </div>
@@ -321,7 +317,7 @@
                 <div style="flex: 1;">
                     <label class="config-label">Embedding Model</label>
                     <select id="embeddingModelSelect" class="config-select">
-                        <option value="text-embedding-3-small">text-embedding-3-small</option>
+                        <option value="">Select provider first...</option>
                     </select>
                 </div>
             </div>
@@ -389,17 +385,106 @@
                 const response = await fetch('/api/rag/embedding-providers');
                 const data = await response.json();
                 console.log('Embedding providers loaded:', data);
-                // Populate embedding provider dropdown if needed
+                
+                // Populate embedding provider dropdown
+                const select = document.getElementById('embeddingProviderSelect');
+                if (select && data.providers) {
+                    select.innerHTML = '';
+                    
+                    // Sort providers by whether they require API key
+                    const providers = Object.entries(data.providers);
+                    const freeProviders = providers.filter(([_, p]) => !p.requires_api_key);
+                    const paidProviders = providers.filter(([_, p]) => p.requires_api_key);
+                    
+                    // Add free providers first
+                    if (freeProviders.length > 0) {
+                        const optgroup = document.createElement('optgroup');
+                        optgroup.label = '💰 Free Options';
+                        freeProviders.forEach(([key, provider]) => {
+                            const option = document.createElement('option');
+                            option.value = key;
+                            option.textContent = `${provider.name} (Free)`;
+                            optgroup.appendChild(option);
+                        });
+                        select.appendChild(optgroup);
+                    }
+                    
+                    // Add paid providers
+                    if (paidProviders.length > 0) {
+                        const optgroup = document.createElement('optgroup');
+                        optgroup.label = '💳 Premium Options';
+                        paidProviders.forEach(([key, provider]) => {
+                            const option = document.createElement('option');
+                            option.value = key;
+                            option.textContent = provider.name;
+                            if (key === 'openai') {
+                                option.textContent += ' (Recommended)';
+                            }
+                            optgroup.appendChild(option);
+                        });
+                        select.appendChild(optgroup);
+                    }
+                    
+                    // Set default to openai if available
+                    select.value = 'openai';
+                    
+                    // Load models for default provider
+                    await loadEmbeddingModels();
+                }
             } catch (error) {
                 console.error('Error loading embedding providers:', error);
+                // Fallback
+                const select = document.getElementById('embeddingProviderSelect');
+                if (select) {
+                    select.innerHTML = '<option value="openai">OpenAI</option>';
+                }
             }
         }
         
         async function loadEmbeddingModels() {
-            // Load models for selected embedding provider
             const provider = document.getElementById('embeddingProviderSelect').value;
-            // This would be populated from the API
-            console.log('Loading embedding models for:', provider);
+            const modelSelect = document.getElementById('embeddingModelSelect');
+            
+            if (!provider) return;
+            
+            try {
+                modelSelect.innerHTML = '<option value="">Loading models...</option>';
+                
+                const response = await fetch(`/api/rag/embedding-models/${provider}`);
+                const data = await response.json();
+                console.log(`Loading embedding models for ${provider}:`, data);
+                
+                modelSelect.innerHTML = '';
+                
+                if (data.models && data.models.length > 0) {
+                    data.models.forEach(model => {
+                        const option = document.createElement('option');
+                        option.value = model.id;
+                        
+                        // Format display text
+                        let displayText = model.name;
+                        if (model.dimensions) {
+                            displayText += ` (${model.dimensions}D)`;
+                        }
+                        if (model.cost) {
+                            displayText += ` - ${model.cost} cost`;
+                        }
+                        
+                        option.textContent = displayText;
+                        modelSelect.appendChild(option);
+                    });
+                    
+                    // Select first model by default
+                    if (modelSelect.options.length > 0) {
+                        modelSelect.selectedIndex = 0;
+                    }
+                } else {
+                    modelSelect.innerHTML = '<option value="">No models available</option>';
+                }
+            } catch (error) {
+                console.error('Error loading embedding models:', error);
+                modelSelect.innerHTML = '<option value="">Error loading models</option>';
+            }
         }
         
         async function loadProviderModels() {
@@ -626,8 +711,10 @@
         }
         
         // Initialize
-        loadEmbeddingProviders();
-        updateDocumentCount();
+        (async function() {
+            await loadEmbeddingProviders();
+            await updateDocumentCount();
+        })();
         
         // Setup markdown
         marked.setOptions({

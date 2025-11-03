@@ -1,0 +1,81 @@
+{
+  "transformers_js": {
+    "source": "Hugging Face Transformers.js",
+    "models": [
+      {
+        "id": "Xenova/all-MiniLM-L6-v2",
+        "name": "all-MiniLM-L6-v2",
+        "description": "Fast, lightweight (22MB)",
+        "size_mb": 22,
+        "dimensions": 384,
+        "category": "speed",
+        "languages": ["en"],
+        "recommended": true
+      },
+      {
+        "id": "Xenova/all-mpnet-base-v2",
+        "name": "all-mpnet-base-v2",
+        "description": "Better quality (80MB)",
+        "size_mb": 80,
+        "dimensions": 768,
+        "category": "quality",
+        "languages": ["en"]
+      },
+      {
+        "id": "Xenova/bge-small-en-v1.5",
+        "name": "BGE-small-en-v1.5",
+        "description": "Fast, good quality (33MB)",
+        "size_mb": 33,
+        "dimensions": 384,
+        "category": "speed",
+        "languages": ["en"]
+      },
+      {
+        "id": "Xenova/bge-base-en-v1.5",
+        "name": "BGE-base-en-v1.5",
+        "description": "High quality (109MB)",
+        "size_mb": 109,
+        "dimensions": 768,
+        "category": "quality",
+        "languages": ["en"]
+      },
+      {
+        "id": "Xenova/gte-small",
+        "name": "GTE-small",
+        "description": "Multilingual (33MB)",
+        "size_mb": 33,
+        "dimensions": 384,
+        "category": "multilingual",
+        "languages": ["multi"]
+      },
+      {
+        "id": "Xenova/multilingual-e5-small",
+        "name": "E5-small-multilingual",
+        "description": "Best multilingual (118MB)",
+        "size_mb": 118,
+        "dimensions": 384,
+        "category": "multilingual",
+        "languages": ["multi"]
+      },
+      {
+        "id": "Xenova/paraphrase-multilingual-MiniLM-L12-v2",
+        "name": "Paraphrase-multilingual-MiniLM",
+        "description": "Multilingual paraphrase (118MB)",
+        "size_mb": 118,
+        "dimensions": 384,
+        "category": "multilingual",
+        "languages": ["multi"]
+      },
+      {
+        "id": "Xenova/gte-base",
+        "name": "GTE-base",
+        "description": "Better multilingual (218MB)",
+        "size_mb": 218,
+        "dimensions": 768,
+        "category": "multilingual",
+        "languages": ["multi"]
+      }
+    ]
+  }
+}
+

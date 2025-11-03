@@ -776,14 +776,9 @@
             <div class="kb-section">
                 <div class="kb-section-title">🧠 Embedding Model</div>
                 <select id="embeddingModelSelect" class="modal-input" style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; background: white; cursor: pointer;" onchange="onEmbeddingModelChange()">
-                    <option value="Xenova/all-MiniLM-L6-v2">all-MiniLM-L6-v2 (Default - Fast, 22MB)</option>
-                    <option value="Xenova/all-mpnet-base-v2">all-mpnet-base-v2 (Better Quality, 80MB)</option>
-                    <option value="Xenova/bge-small-en-v1.5">BGE-small-en-v1.5 (Fast, 33MB)</option>
-                    <option value="Xenova/bge-base-en-v1.5">BGE-base-en-v1.5 (High Quality, 109MB)</option>
-                    <option value="Xenova/gte-small">GTE-small (Multilingual, 33MB)</option>
-                    <option value="Xenova/multilingual-e5-small">E5-small-multilingual (Multilingual, 118MB)</option>
+                    <option value="">Loading models...</option>
                 </select>
-                <div style="font-size: 12px; color: #999; margin-top: 8px;">
+                <div id="embeddingModelInfo" style="font-size: 12px; color: #999; margin-top: 8px;">
                     💡 Model downloads once and is cached. Larger models provide better quality but take longer to download initially.
                 </div>
             </div>
@@ -1693,9 +1688,109 @@
         let embeddingPipeline = null;
         let knowledgeBase = [];
         let currentEmbeddingModel = localStorage.getItem('selectedEmbeddingModel') || 'Xenova/all-MiniLM-L6-v2';
+        let availableEmbeddingModels = [];
         const DB_NAME = 'DualMindKnowledgeBase';
         const DB_VERSION = 1;
         const STORE_NAME = 'documents';
+        
+        // Load available embedding models from API
+        async function loadAvailableEmbeddingModels() {
+            try {
+                const response = await fetch('/api/local/embedding-models');
+                const data = await response.json();
+                availableEmbeddingModels = data.models;
+                
+                // Populate dropdown
+                const select = document.getElementById('embeddingModelSelect');
+                if (select) {
+                    select.innerHTML = '';
+                    
+                    // Group by category
+                    const categories = {
+                        speed: [],
+                        quality: [],
+                        multilingual: []
+                    };
+                    
+                    data.models.forEach(model => {
+                        if (model.category in categories) {
+                            categories[model.category].push(model);
+                        }
+                    });
+                    
+                    // Add speed models
+                    if (categories.speed.length > 0) {
+                        const optgroup = document.createElement('optgroup');
+                        optgroup.label = '⚡ Fast Models';
+                        categories.speed.forEach(model => {
+                            const option = document.createElement('option');
+                            option.value = model.id;
+                            option.textContent = `${model.name} (${model.size_mb}MB)${model.recommended ? ' - Recommended' : ''}`;
+                            optgroup.appendChild(option);
+                        });
+                        select.appendChild(optgroup);
+                    }
+                    
+                    // Add quality models
+                    if (categories.quality.length > 0) {
+                        const optgroup = document.createElement('optgroup');
+                        optgroup.label = '⭐ Quality Models';
+                        categories.quality.forEach(model => {
+                            const option = document.createElement('option');
+                            option.value = model.id;
+                            option.textContent = `${model.name} (${model.size_mb}MB)`;
+                            optgroup.appendChild(option);
+                        });
+                        select.appendChild(optgroup);
+                    }
+                    
+                    // Add multilingual models
+                    if (categories.multilingual.length > 0) {
+                        const optgroup = document.createElement('optgroup');
+                        optgroup.label = '🌍 Multilingual Models';
+                        categories.multilingual.forEach(model => {
+                            const option = document.createElement('option');
+                            option.value = model.id;
+                            option.textContent = `${model.name} (${model.size_mb}MB)`;
+                            optgroup.appendChild(option);
+                        });
+                        select.appendChild(optgroup);
+                    }
+                    
+                    // Set current selection
+                    select.value = currentEmbeddingModel;
+                    updateEmbeddingModelInfo();
+                }
+                
+                console.log(`Loaded ${data.models.length} embedding models from ${data.source}`);
+            } catch (error) {
+                console.error('Failed to load embedding models:', error);
+                // Fallback to default
+                const select = document.getElementById('embeddingModelSelect');
+                if (select) {
+                    select.innerHTML = '<option value="Xenova/all-MiniLM-L6-v2">all-MiniLM-L6-v2 (Default)</option>';
+                }
+            }
+        }
+        
+        // Update model info display
+        function updateEmbeddingModelInfo() {
+            const select = document.getElementById('embeddingModelSelect');
+            const infoDiv = document.getElementById('embeddingModelInfo');
+            
+            if (select && infoDiv && availableEmbeddingModels.length > 0) {
+                const selectedId = select.value;
+                const modelInfo = availableEmbeddingModels.find(m => m.id === selectedId);
+                
+                if (modelInfo) {
+                    infoDiv.innerHTML = `
+                        📊 <strong>${modelInfo.name}</strong>: ${modelInfo.description}<br>
+                        📏 Dimensions: ${modelInfo.dimensions} | 💾 Size: ${modelInfo.size_mb}MB | 
+                        ${modelInfo.languages.includes('multi') ? '🌍 Multilingual' : '🇬🇧 English'}
+                    `;
+                }
+            }
+        }
         
         // Initialize IndexedDB
         function initDB() {
@@ -1765,6 +1860,9 @@
                 return;
             }
             
+            // Update info display
+            updateEmbeddingModelInfo();
+            
             // Check if there are existing documents
             if (knowledgeBase.length > 0) {
                 const modelName = newModel.split('/')[1];
@@ -1782,10 +1880,12 @@
                         alert('Failed to load new embedding model. Please try again.');
                         // Revert selection
                         document.getElementById('embeddingModelSelect').value = oldModel;
+                        updateEmbeddingModelInfo();
                     }
                 } else {
                     // User cancelled, revert selection
                     document.getElementById('embeddingModelSelect').value = oldModel;
+                    updateEmbeddingModelInfo();
                 }
             } else {
                 // No documents, safe to switch
@@ -2098,10 +2198,16 @@
         async function openKnowledgeBase() {
             document.getElementById('knowledgeBaseModal').classList.remove('hidden');
             
+            // Load embedding models if not already loaded
+            if (availableEmbeddingModels.length === 0) {
+                await loadAvailableEmbeddingModels();
+            }
+            
             // Set the dropdown to the currently selected model
             const embeddingSelect = document.getElementById('embeddingModelSelect');
             if (embeddingSelect) {
                 embeddingSelect.value = currentEmbeddingModel;
+                updateEmbeddingModelInfo();
             }
             
             await refreshDocumentsList();

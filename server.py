@@ -1817,6 +1817,63 @@ async def get_embedding_providers():
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.get("/api/rag/embedding-models/{provider}")
+async def get_embedding_models(provider: str):
+    """Get available embedding models for a specific provider"""
+    try:
+        from embedding_service import EMBEDDING_PROVIDERS
+        
+        if provider not in EMBEDDING_PROVIDERS:
+            raise HTTPException(status_code=404, detail=f"Provider {provider} not found")
+        
+        provider_info = EMBEDDING_PROVIDERS[provider]
+        return {
+            "provider": provider,
+            "name": provider_info["name"],
+            "models": provider_info["models"]
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/local/embedding-models")
+async def get_local_embedding_models():
+    """Get available Transformers.js embedding models for local mode"""
+    try:
+        import json
+        from pathlib import Path
+        
+        # Read from JSON file
+        models_file = Path("static/embedding_models.json")
+        if models_file.exists():
+            with open(models_file, 'r') as f:
+                data = json.load(f)
+                return {
+                    "source": data["transformers_js"]["source"],
+                    "models": data["transformers_js"]["models"]
+                }
+        else:
+            # Fallback to hardcoded list
+            return {
+                "source": "Transformers.js",
+                "models": [
+                    {
+                        "id": "Xenova/all-MiniLM-L6-v2",
+                        "name": "all-MiniLM-L6-v2",
+                        "description": "Fast, lightweight (22MB)",
+                        "size_mb": 22,
+                        "dimensions": 384,
+                        "category": "speed",
+                        "recommended": True
+                    }
+                ]
+            }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.post("/api/rag/upload")
 async def upload_document(request: DocumentUploadRequest):
     """Upload and process a document for RAG"""
