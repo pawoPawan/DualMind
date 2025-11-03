@@ -171,8 +171,11 @@ static/
 │   ├── models.js                    # Model manager (80 lines)
 │   └── rag.js                       # RAG manager (90 lines)
 ├── local.html                       # Main HTML (200 lines)
-├── cloud_rag_example.html          # Cloud RAG demo
 └── embedding_models.json            # Model config
+
+examples/
+├── README.md                        # Examples documentation
+└── cloud_rag_example.html           # Cloud RAG demo (example)
 ```
 
 ## 🔧 Server Changes

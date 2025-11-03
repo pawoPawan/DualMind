@@ -46,7 +46,7 @@ DualMind AI now supports **RAG (Retrieval-Augmented Generation) in Cloud Mode** 
 
 2. Open the Cloud RAG example:
 ```
-http://localhost:8000/static/cloud_rag_example.html
+http://localhost:8000/examples/cloud_rag_example.html
 ```
 
 3. Configure your settings:
