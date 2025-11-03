@@ -269,14 +269,10 @@
     
     <!-- Cloud Mode Application Script -->
     <script type="module">
-        // Import and initialize DualMind cloud app
-        import app from '/static/js/cloud-app.js';
+        // Import DualMind cloud app - it will auto-initialize and expose to window
+        await import('/static/js/cloud-app.js');
         
-        // Expose to window for inline event handlers
-        window.dualmind = app;
-        window.cloudApp = app;
-        
-        console.log('✅ DualMind Cloud loaded and exposed to window');
+        console.log('✅ DualMind Cloud loaded');
     </script>
 </body>
 </html>

@@ -233,13 +233,10 @@
     
     <!-- DualMind Application -->
     <script type="module">
-        // Import and initialize DualMind app
-        import app from '/static/js/app.js';
+        // Import DualMind app - it will auto-initialize and expose to window
+        await import('/static/js/app.js');
         
-        // Expose to window for inline event handlers
-        window.dualmind = app;
-        
-        console.log('✅ DualMind loaded and exposed to window');
+        console.log('✅ DualMind loaded');
     </script>
 </body>
 </html>
