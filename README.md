@@ -185,22 +185,33 @@ Make sure your phone and computer are on the **same WiFi network**.
 ### 🌐 Web Platform Features
 
 #### Cloud Mode (☁️)
-- ✅ **Multi-Cloud Providers** - Choose from Google, OpenAI, Anthropic, NVIDIA, Azure
-- ✅ **🤖 Dynamic Model Selection** - Select from multiple AI models per provider
-- ✅ **Fast Responses** - Powered by cutting-edge AI models
-- ✅ **No Downloads** - Start chatting immediately
-- ✅ **Model access API Key** - Secure storage in browser localStorage
-- ✅ **Recommended Models** - Auto-selection with visual indicators
+- ✅ **Multi-Cloud Providers** - Google, OpenAI, Anthropic, NVIDIA, Azure
+- ✅ **30+ AI Models** - GPT-4o, Claude 3.5, Gemini, Llama 3.1, and more
+- ✅ **Dynamic Model Selection** - Choose optimal model per task
+- ✅ **Fast Responses** - Powered by cutting-edge AI infrastructure
+- ✅ **Secure API Keys** - Encrypted storage in browser localStorage
+- ✅ **Smart Defaults** - Recommended models with visual indicators
 
 #### Local Mode (🔒)
+**Privacy & Performance:**
 - ✅ **100% Privacy** - Runs entirely in your browser
 - ✅ **No API Key Required** - No registration needed
-- ✅ **Offline Capable** - Works without internet after download
-- ✅ **GGUF Models** - Uses WebLLM with efficient models
-- ✅ **Multiple Models** - Choose from TinyLlama, Phi-3, Llama 3.2
-- ✅ **📚 RAG Support** - Upload documents and chat with your files!
+- ✅ **Offline Capable** - Works without internet after model download
+- ✅ **WebGPU Acceleration** - GPU-powered inference
+
+**AI Capabilities:**
+- ✅ **Multiple Models** - TinyLlama, Phi-3, Llama 3.2, Qwen2.5, SmolLM2
+- ✅ **📚 RAG Support** - Upload documents and chat with your files
 - ✅ **Local Embeddings** - Semantic search using Transformers.js
-- ✅ **Document Management** - Upload, view, delete documents in browser
+- ✅ **💭 Custom Memory** - Set personalized AI instructions
+
+**User Experience:**
+- ✅ **📝 Markdown & Code Highlighting** - Beautiful syntax highlighting
+- ✅ **💾 Export Conversations** - Download as JSON or Markdown
+- ✅ **🎤 Voice Input** - Speak your messages using Web Speech API
+- ✅ **🔄 Regenerate Responses** - Get alternative answers instantly
+- ✅ **🌙 Dark Mode** - Eye-friendly theme with persistence
+- ✅ **📁 Chat History** - Save, load, and manage multiple conversations
 
 #### Common Web Features
 - ✅ **Modern Web UI** - Beautiful, responsive chat interface
@@ -642,30 +653,25 @@ Updates are downloaded automatically when users open the app!
 
 ## 📖 Resources
 
-### Web Development Resources
-- [Google ADK Documentation](https://google.github.io/adk-docs/)
-- [Get Google API Key](https://aistudio.google.com/apikey)
-- [OpenAI API Keys](https://platform.openai.com/api-keys)
-- [Anthropic API Keys](https://console.anthropic.com/)
-- [NVIDIA API Keys](https://build.nvidia.com/)
-- [Azure OpenAI](https://azure.microsoft.com/en-us/products/ai-services/openai-service)
-- [WebLLM Documentation](https://webllm.mlc.ai/)
-- [FastAPI Documentation](https://fastapi.tiangolo.com/)
+### 📚 Project Documentation
+- **[ADVANCED_FEATURES.md](ADVANCED_FEATURES.md)** - Advanced features guide
+- **[RAG_GUIDE.md](RAG_GUIDE.md)** - Document Q&A implementation
+- **[MOBILE_APP_PLAN.md](MOBILE_APP_PLAN.md)** - Mobile architecture
+- **[MOBILE_TESTING_GUIDE.md](MOBILE_TESTING_GUIDE.md)** - Mobile testing
+- **[EXPO_CONNECTION_GUIDE.md](EXPO_CONNECTION_GUIDE.md)** - Troubleshooting
 
-### Mobile Development Resources
-- [Expo Documentation](https://docs.expo.dev/)
-- [React Native Documentation](https://reactnative.dev/)
-- [React Navigation](https://reactnavigation.org/)
-- [Expo Go App - iOS](https://apps.apple.com/app/expo-go/id982107779)
-- [Expo Go App - Android](https://play.google.com/store/apps/details?id=host.exp.exponent)
-- [EAS Build Documentation](https://docs.expo.dev/build/introduction/)
-- [React Native SecureStore](https://docs.expo.dev/versions/latest/sdk/securestore/)
+### 🔑 Get API Keys (Cloud Mode)
+- [Google Gemini](https://aistudio.google.com/apikey) - Free tier available
+- [OpenAI](https://platform.openai.com/api-keys) - GPT models
+- [Anthropic](https://console.anthropic.com/) - Claude models
+- [NVIDIA](https://build.nvidia.com/) - Free AI endpoints
+- [Azure OpenAI](https://azure.microsoft.com/products/ai-services/openai-service)
 
-### Project Documentation
-- [FEATURES.md](FEATURES.md) - Complete feature list
-- [MOBILE_APP_PLAN.md](MOBILE_APP_PLAN.md) - Mobile architecture
-- [EXPO_CONNECTION_GUIDE.md](EXPO_CONNECTION_GUIDE.md) - Connection troubleshooting
-- [CUSTOMIZATION_GUIDE.md](CUSTOMIZATION_GUIDE.md) - Branding customization
+### 🛠️ Technology Stack
+- [WebLLM](https://webllm.mlc.ai/) - Browser-based LLM inference
+- [Transformers.js](https://huggingface.co/docs/transformers.js) - Local embeddings
+- [FastAPI](https://fastapi.tiangolo.com/) - Python backend
+- [React Native](https://reactnative.dev/) / [Expo](https://docs.expo.dev/) - Mobile platform
 
 ## 🎯 What's Next?
 
@@ -673,24 +679,21 @@ Updates are downloaded automatically when users open the app!
 
 #### Web Application
 - [ ] Function calling/tools integration
-- [ ] Implement multi-agent systems
-- [ ] Voice input/output support
-- [ ] Export conversations (JSON, PDF, Markdown)
+- [ ] Multi-agent systems
+- [ ] PDF export format
 - [ ] Conversation search and filtering
 - [ ] Authentication for team/enterprise use
 - [ ] More local models (Mistral, Gemma, Qwen)
 - [ ] Image understanding (multimodal support)
-- [ ] Advanced RAG with vector databases
+- [ ] Multi-language voice support
 
 #### Mobile Application
-- [ ] Complete Chat UI implementation
+- [ ] Feature parity with web (markdown, dark mode, etc.)
 - [ ] Local Mode via WebView + WebLLM
 - [ ] Push notifications for long responses
-- [ ] Voice input via device microphone
 - [ ] Image/camera integration for multimodal chat
 - [ ] Offline mode with local caching
 - [ ] Share conversations via native sharing
-- [ ] Dark mode with system sync
 - [ ] Widget support (iOS/Android)
 - [ ] Apple Watch / Wear OS companion app
 
@@ -817,6 +820,7 @@ npm cache clean --force
 📖 **More Help**: 
 - [EXPO_CONNECTION_GUIDE.md](EXPO_CONNECTION_GUIDE.md) - Detailed mobile troubleshooting
 - [MOBILE_TESTING_GUIDE.md](MOBILE_TESTING_GUIDE.md) - Mobile testing guide
+
 
 ## 📝 License
 
