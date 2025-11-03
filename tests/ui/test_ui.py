@@ -270,7 +270,7 @@ class TestResponsiveDesign:
     
     def test_enhanced_ui_has_media_queries(self):
         """Test that enhanced UI has responsive media queries"""
-        response = self.client.get("/static/local_enhanced.html")
+        response = self.client.get("/static/css/local.css")
         content = response.text
         
         assert "@media" in content
@@ -285,7 +285,7 @@ class TestAccessibility:
     
     def test_ui_has_semantic_html(self):
         """Test that UI uses semantic HTML"""
-        response = self.client.get("/static/local_enhanced.html")
+        response = self.client.get("/local")
         content = response.text.lower()
         
         # Check for semantic elements
@@ -295,7 +295,7 @@ class TestAccessibility:
     
     def test_buttons_have_labels(self):
         """Test that buttons have proper labels"""
-        response = self.client.get("/static/local_enhanced.html")
+        response = self.client.get("/local")
         content = response.text
         
         # Buttons should have text or title attributes
@@ -319,7 +319,7 @@ class TestJavaScriptFunctionality:
     
     def test_enhanced_ui_has_essential_functions(self):
         """Test that enhanced UI has essential functions"""
-        response = self.client.get("/static/local_enhanced.html")
+        response = self.client.get("/local")
         content = response.text
         
         essential_functions = [
@@ -333,7 +333,7 @@ class TestJavaScriptFunctionality:
     
     def test_ui_has_event_handlers(self):
         """Test that UI has event handlers"""
-        response = self.client.get("/static/local_enhanced.html")
+        response = self.client.get("/local")
         content = response.text
         
         # Check for common event handlers
@@ -348,7 +348,7 @@ class TestDarkMode:
     
     def test_enhanced_ui_has_dark_mode_styling(self):
         """Test that enhanced UI has dark mode CSS"""
-        response = self.client.get("/static/local_enhanced.html")
+        response = self.client.get("/static/css/local.css")
         content = response.text
         
         # Check for dark color schemes
