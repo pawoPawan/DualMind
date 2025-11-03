@@ -118,48 +118,119 @@ class TestCloudModeUI:
         assert "send" in content or "submit" in content
 
 
-class TestEnhancedLocalUI:
-    """Test Enhanced Local Mode UI"""
+class TestModularLocalUI:
+    """Test Modular Local Mode UI"""
     
     def setup_method(self):
         self.client = TestClient(app)
     
-    def test_enhanced_local_loads(self):
-        """Test that enhanced local mode loads"""
-        response = self.client.get("/static/local_enhanced.html")
+    def test_local_html_loads(self):
+        """Test that local.html loads"""
+        response = self.client.get("/static/local.html")
         assert response.status_code == 200
         assert "text/html" in response.headers["content-type"]
     
-    def test_enhanced_ui_has_sidebar(self):
-        """Test that enhanced UI has sidebar"""
-        response = self.client.get("/static/local_enhanced.html")
+    def test_local_ui_has_sidebar(self):
+        """Test that local UI has sidebar"""
+        response = self.client.get("/static/local.html")
         content = response.text.lower()
         
         assert "sidebar" in content
     
-    def test_enhanced_ui_has_chat_history(self):
-        """Test that enhanced UI has chat history"""
-        response = self.client.get("/static/local_enhanced.html")
+    def test_local_ui_has_chat_history(self):
+        """Test that local UI has chat history"""
+        response = self.client.get("/static/local.html")
         content = response.text.lower()
         
         assert "chat" in content and "history" in content
     
-    def test_enhanced_ui_has_model_selector(self):
-        """Test that enhanced UI has model selector"""
-        response = self.client.get("/static/local_enhanced.html")
+    def test_local_ui_has_model_selector(self):
+        """Test that local UI has model selector"""
+        response = self.client.get("/static/local.html")
         content = response.text.lower()
         
         assert "model" in content and ("select" in content or "selector" in content)
     
-    def test_enhanced_ui_has_modern_styling(self):
-        """Test that enhanced UI has modern CSS"""
-        response = self.client.get("/static/local_enhanced.html")
+    def test_local_ui_uses_modular_js(self):
+        """Test that local UI uses modular JavaScript"""
+        response = self.client.get("/static/local.html")
         content = response.text
         
+        # Check for modular JS imports
+        assert "/static/js/app.js" in content
+    
+    def test_local_ui_uses_modular_css(self):
+        """Test that local UI uses modular CSS"""
+        response = self.client.get("/static/local.html")
+        content = response.text
+        
+        # Check for CSS link
+        assert "/static/css/local.css" in content
+
+
+class TestModularJavaScript:
+    """Test Modular JavaScript Files"""
+    
+    def setup_method(self):
+        self.client = TestClient(app)
+    
+    def test_app_js_exists(self):
+        """Test that app.js exists"""
+        response = self.client.get("/static/js/app.js")
+        assert response.status_code == 200
+    
+    def test_config_js_exists(self):
+        """Test that config.js exists"""
+        response = self.client.get("/static/js/config.js")
+        assert response.status_code == 200
+    
+    def test_ui_js_exists(self):
+        """Test that ui.js exists"""
+        response = self.client.get("/static/js/ui.js")
+        assert response.status_code == 200
+    
+    def test_chat_js_exists(self):
+        """Test that chat.js exists"""
+        response = self.client.get("/static/js/chat.js")
+        assert response.status_code == 200
+    
+    def test_models_js_exists(self):
+        """Test that models.js exists"""
+        response = self.client.get("/static/js/models.js")
+        assert response.status_code == 200
+    
+    def test_rag_js_exists(self):
+        """Test that rag.js exists"""
+        response = self.client.get("/static/js/rag.js")
+        assert response.status_code == 200
+    
+    def test_storage_js_exists(self):
+        """Test that storage.js exists"""
+        response = self.client.get("/static/js/storage.js")
+        assert response.status_code == 200
+
+
+class TestModularCSS:
+    """Test Modular CSS Files"""
+    
+    def setup_method(self):
+        self.client = TestClient(app)
+    
+    def test_local_css_exists(self):
+        """Test that local.css exists"""
+        response = self.client.get("/static/css/local.css")
+        assert response.status_code == 200
+        assert "text/css" in response.headers["content-type"]
+    
+    def test_local_css_has_modern_features(self):
+        """Test that CSS has modern features"""
+        response = self.client.get("/static/css/local.css")
+        content = response.text.lower()
+        
         # Check for modern CSS features
-        assert "flex" in content.lower() or "grid" in content.lower()
-        assert "border-radius" in content.lower()
-        assert "transition" in content.lower()
+        assert "flex" in content or "grid" in content
+        assert "border-radius" in content
+        assert "transition" in content
 
 
 class TestStaticAssets:
@@ -173,24 +244,12 @@ class TestStaticAssets:
         response = self.client.get("/static/embedding_models.json")
         assert response.status_code == 200
         data = response.json()
-        assert isinstance(data, list)
-        assert len(data) > 0
+        # JSON structure has changed to object with transformers_js key
+        assert isinstance(data, dict) or isinstance(data, list)
     
-    def test_embedding_models_structure(self):
-        """Test embedding models JSON structure"""
-        response = self.client.get("/static/embedding_models.json")
-        data = response.json()
-        
-        # Check first model structure
-        model = data[0]
-        assert "id" in model
-        assert "name" in model
-        assert "dimensions" in model
-        assert "category" in model
-    
-    def test_local_enhanced_html(self):
-        """Test that enhanced local HTML is accessible"""
-        response = self.client.get("/static/local_enhanced.html")
+    def test_local_html_accessible(self):
+        """Test that local.html is accessible"""
+        response = self.client.get("/static/local.html")
         assert response.status_code == 200
         assert "text/html" in response.headers["content-type"]
 

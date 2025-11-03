@@ -101,29 +101,11 @@ class EmbeddingProvidersResponse(BaseModel):
 # Routes
 @app.get("/local", response_class=HTMLResponse)
 async def local_mode():
-    """Serve the enhanced local browser-based inference UI"""
-    # Serve the enhanced modern UI
-    with open("static/local_enhanced.html", "r") as f:
+    """Serve the modular local browser-based inference UI"""
+    # Serve the consolidated modular UI
+    with open("static/local.html", "r") as f:
         html_template = f.read()
     return html_template
-
-
-@app.get("/local/classic", response_class=HTMLResponse)
-async def local_mode_classic():
-    """Serve the classic local browser-based inference UI with branding"""
-    # Read the template file
-    with open("static/index_local.html", "r") as f:
-        html_template = f.read()
-    
-    # Replace branding variables
-    html = html_template
-    html = html.replace("DualMind AI - Local Mode", f"{CHATBOT_NAME} - Local Mode")
-    html = html.replace("🧠 DualMind AI Chatbot", f"{CHATBOT_ICON} {CHATBOT_NAME} Chatbot")
-    html = html.replace("🧠 Welcome to DualMind AI - Local Mode", f"{CHATBOT_ICON} Welcome to {CHATBOT_NAME} - Local Mode")
-    html = html.replace("Welcome to DualMind AI Local Mode! Your AI runs privately in your browser.", WELCOME_MESSAGE_LOCAL)
-    html = html.replace("__STORAGE_KEY_LOCAL_BANNER__", STORAGE_KEY_LOCAL_BANNER)
-    
-    return html
 
 
 @app.get("/cloud", response_class=HTMLResponse)

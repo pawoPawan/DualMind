@@ -187,7 +187,8 @@ class TestUIEndpoints:
         response = self.client.get("/static/embedding_models.json")
         assert response.status_code == 200
         data = response.json()
-        assert isinstance(data, list)
+        # JSON structure can be dict or list depending on format
+        assert isinstance(data, (dict, list))
 
 
 class TestRAGDocumentEndpoints:

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DualMind AI - Local Mode</title>
+    
+    <!-- External Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/marked@11.1.1/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/core.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/languages/javascript.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/languages/python.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/languages/java.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/languages/cpp.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/languages/xml.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/languages/css.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/languages/json.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/languages/bash.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github-dark.min.css">
+    
+    <!-- DualMind Styles -->
+    <link rel="stylesheet" href="/static/css/local.css">
+    
+    <!-- Initialize WebLLM and Transformers.js -->
+    <script type="module">
+        import { CreateMLCEngine } from "https://esm.run/@mlc-ai/web-llm";
+        window.CreateMLCEngine = CreateMLCEngine;
+        
+        import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.1';
+        env.allowLocalModels = false;
+        window.transformers = { pipeline, env };
+        
+        // Configure marked for code highlighting
+        marked.setOptions({
+            highlight: function(code, lang) {
+                if (lang && hljs.getLanguage(lang)) {
+                    try {
+                        return hljs.highlight(code, { language: lang }).value;
+                    } catch (err) {}
+                }
+                return hljs.highlightAuto(code).value;
+            },
+            breaks: true,
+            gfm: true
+        });
+    </script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <button class="new-chat-btn" onclick="dualmind.startNewChat()">
+                    <span>💬</span>
+                    <span>New chat</span>
+                </button>
+            </div>
+            
+            <div class="chat-history">
+                <div class="chat-history-title">Your chats</div>
+                <div id="chatHistoryList"></div>
+            </div>
+            
+            <div class="sidebar-footer">
+                <div class="user-avatar">DM</div>
+                <div class="user-name">DualMind User</div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Header -->
+            <div class="chat-header">
+                <div class="model-selector" onclick="dualmind.openModelSelector()">
+                    <div class="model-icon">🤖</div>
+                    <div class="model-info">
+                        <h3 id="currentModelName">Select Model</h3>
+                        <p id="currentModelDesc">Click to choose a model</p>
+                    </div>
+                </div>
+                
+                <div class="header-actions">
+                    <button class="header-btn" onclick="dualmind.openSettings()" title="Settings">⚙️</button>
+                    <button class="header-btn" onclick="dualmind.exportChat()" title="Export">⬇️</button>
+                    <button class="header-btn" onclick="dualmind.switchToCloudMode()" title="Cloud Mode">☁️</button>
+                </div>
+            </div>
+            
+            <!-- Messages -->
+            <div class="chat-messages" id="chatMessages">
+                <div class="empty-state">
+                    <div class="empty-state-icon">💬</div>
+                    <h1>How can I help you today?</h1>
+                    <p>Select a model to start chatting. Your AI runs privately in your browser with no data sent to servers.</p>
+                </div>
+            </div>
+            
+            <!-- Input -->
+            <div class="chat-input-container">
+                <div class="input-wrapper">
+                    <span class="attach-icon" onclick="dualmind.openKnowledgeBase()" title="Add documents">📎</span>
+                    <textarea 
+                        class="chat-input" 
+                        id="userInput" 
+                        placeholder="Enter your prompt here"
+                        rows="1"
+                    ></textarea>
+                    <div class="input-actions">
+                        <button class="input-btn" id="voiceBtn" onclick="dualmind.toggleVoice()" title="Voice input">🎤</button>
+                        <button class="input-btn primary" id="sendBtn" onclick="dualmind.sendMessage()" disabled title="Send">➤</button>
+                    </div>
+                </div>
+                <div class="input-hint">
+                    Press Enter to send, Shift+Enter for new line
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Model Selector Modal -->
+    <div class="modal" id="modelModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Select Model</h2>
+                <button class="close-modal" onclick="dualmind.closeModelSelector()">×</button>
+            </div>
+            <div class="model-list" id="modelList"></div>
+        </div>
+    </div>
+    
+    <!-- Knowledge Base Modal -->
+    <div class="modal" id="knowledgeModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📚 Knowledge Base</h2>
+                <button class="close-modal" onclick="dualmind.closeKnowledgeBase()">×</button>
+            </div>
+            <div id="knowledgeContent">
+                <p style="color: #999; margin-bottom: 16px;">
+                    Upload documents to enhance AI responses with your own data.
+                </p>
+                <input type="file" id="fileInput" multiple style="display: none;" 
+                       onchange="dualmind.handleFileUpload(event)">
+                <button class="new-chat-btn" onclick="document.getElementById('fileInput').click()">
+                    📄 Upload Documents
+                </button>
+                <div id="uploadedFiles" style="margin-top: 16px;"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- DualMind Application -->
+    <script type="module" src="/static/js/app.js"></script>
+</body>
+</html>
+
