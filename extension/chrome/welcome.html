@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome to DualMind!</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 600px;
+      background: white;
+      border-radius: 20px;
+      padding: 50px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      text-align: center;
+    }
+    
+    h1 {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+    
+    h2 {
+      font-size: 28px;
+      color: #1f2937;
+      margin-bottom: 12px;
+    }
+    
+    p {
+      color: #6b7280;
+      font-size: 16px;
+      line-height: 1.6;
+      margin-bottom: 30px;
+    }
+    
+    .features {
+      text-align: left;
+      margin: 30px 0;
+    }
+    
+    .feature {
+      display: flex;
+      align-items: start;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    
+    .feature-icon {
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+    
+    .feature-content h3 {
+      font-size: 16px;
+      color: #1f2937;
+      margin-bottom: 4px;
+    }
+    
+    .feature-content p {
+      font-size: 14px;
+      color: #6b7280;
+      margin: 0;
+    }
+    
+    .cta {
+      margin-top: 40px;
+    }
+    
+    .btn {
+      display: inline-block;
+      padding: 14px 32px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      text-decoration: none;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 16px;
+      transition: transform 0.2s, box-shadow 0.2s;
+      border: none;
+      cursor: pointer;
+    }
+    
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+    }
+    
+    .secondary-link {
+      display: block;
+      margin-top: 16px;
+      color: #667eea;
+      text-decoration: none;
+      font-size: 14px;
+    }
+    
+    .secondary-link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧠</h1>
+    <h2>Welcome to DualMind!</h2>
+    <p>Your AI assistant is now installed and ready to help you.</p>
+    
+    <div class="features">
+      <div class="feature">
+        <div class="feature-icon">💻</div>
+        <div class="feature-content">
+          <h3>Local Mode</h3>
+          <p>Run AI models directly in your browser - no API key needed!</p>
+        </div>
+      </div>
+      
+      <div class="feature">
+        <div class="feature-icon">☁️</div>
+        <div class="feature-content">
+          <h3>Cloud Mode</h3>
+          <p>Access powerful AI from Google, OpenAI, Anthropic, and more</p>
+        </div>
+      </div>
+      
+      <div class="feature">
+        <div class="feature-icon">⚡</div>
+        <div class="feature-content">
+          <h3>One-Click Access</h3>
+          <p>Click the extension icon or use Ctrl/Cmd + Shift + D</p>
+        </div>
+      </div>
+      
+      <div class="feature">
+        <div class="feature-icon">🔒</div>
+        <div class="feature-content">
+          <h3>Privacy First</h3>
+          <p>Your conversations are stored locally and never shared</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="cta">
+      <button class="btn" onclick="openExtension()">Get Started</button>
+      <a href="options.html" class="secondary-link">Configure Settings →</a>
+    </div>
+  </div>
+  
+  <script>
+    function openExtension() {
+      // Try to open the extension popup
+      chrome.action.openPopup();
+      
+      // Close this tab after a short delay
+      setTimeout(() => {
+        window.close();
+      }, 500);
+    }
+  </script>
+</body>
+</html>
+

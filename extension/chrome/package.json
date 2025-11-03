@@ -1,0 +1,21 @@
+{
+  "name": "dualmind-extension",
+  "version": "1.0.0",
+  "description": "DualMind AI Assistant Browser Extension",
+  "scripts": {
+    "build": "echo 'No build step required for now'",
+    "package": "npm run zip",
+    "zip": "zip -r dualmind-extension.zip . -x '*.git*' 'node_modules/*' 'package*.json' '*.zip'",
+    "clean": "rm -f dualmind-extension.zip"
+  },
+  "keywords": [
+    "ai",
+    "chatbot",
+    "assistant",
+    "webllm",
+    "chrome-extension"
+  ],
+  "author": "DualMind Team",
+  "license": "MIT"
+}
+

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DualMind AI Assistant</title>
+  <link rel="stylesheet" href="css/popup.css">
+</head>
+<body>
+  <!-- Mode Selector (shown on first load) -->
+  <div id="mode-selector" class="mode-selector hidden">
+    <div class="mode-header">
+      <h1>🧠 DualMind</h1>
+      <p>Choose your AI mode</p>
+    </div>
+    
+    <div class="mode-options">
+      <button class="mode-btn" data-mode="local">
+        <div class="mode-icon">💻</div>
+        <h3>Local Mode</h3>
+        <p>Run AI in your browser</p>
+        <span class="badge">No API Key</span>
+      </button>
+      
+      <button class="mode-btn" data-mode="cloud">
+        <div class="mode-icon">☁️</div>
+        <h3>Cloud Mode</h3>
+        <p>Use cloud AI providers</p>
+        <span class="badge">Requires API Key</span>
+      </button>
+    </div>
+    
+    <div class="mode-footer">
+      <a href="#" id="open-options">⚙️ Settings</a>
+    </div>
+  </div>
+  
+  <!-- Main Chat Interface -->
+  <div id="chat-container" class="chat-container">
+    <!-- Header -->
+    <div class="chat-header">
+      <div class="header-left">
+        <span class="logo">🧠</span>
+        <span class="title">DualMind</span>
+        <span class="mode-badge" id="current-mode-badge"></span>
+      </div>
+      <div class="header-right">
+        <button class="icon-btn" id="new-chat-btn" title="New Chat">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+        </button>
+        <button class="icon-btn" id="settings-btn" title="Settings">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M12 1v6m0 6v6m5.66-10.66l-4.24 4.24m-2.83 2.83l-4.24 4.24M23 12h-6m-6 0H1m16.95-5.66l-4.24 4.24m-2.83 2.83l-4.24 4.24"></path>
+          </svg>
+        </button>
+        <button class="icon-btn" id="switch-mode-btn" title="Switch Mode">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+    
+    <!-- Chat Messages -->
+    <div class="chat-messages" id="chat-messages">
+      <div class="welcome-message">
+        <h2>👋 Hello!</h2>
+        <p>I'm DualMind, your AI assistant. How can I help you today?</p>
+        <div class="quick-actions">
+          <button class="quick-btn" data-action="Explain this page">📄 Explain Page</button>
+          <button class="quick-btn" data-action="Summarize this article">📝 Summarize</button>
+          <button class="quick-btn" data-action="Help me write an email">✉️ Write Email</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Input Area -->
+    <div class="chat-input">
+      <div class="input-container">
+        <button class="icon-btn" id="attach-btn" title="Attach Document">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+          </svg>
+        </button>
+        <textarea 
+          id="message-input" 
+          placeholder="Ask me anything... (Ctrl+Enter to send)"
+          rows="1"
+        ></textarea>
+        <button class="icon-btn" id="send-btn" title="Send Message">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="22" y1="2" x2="11" y2="13"></line>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+          </svg>
+        </button>
+      </div>
+      <div class="input-footer">
+        <span class="char-count" id="char-count">0 / 2000</span>
+        <span class="model-info" id="model-info">Loading...</span>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Loading Overlay -->
+  <div id="loading-overlay" class="loading-overlay hidden">
+    <div class="loading-spinner"></div>
+    <p id="loading-text">Loading...</p>
+  </div>
+  
+  <!-- Scripts -->
+  <script type="module" src="js/popup.js"></script>
+</body>
+</html>
+
