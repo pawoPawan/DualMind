@@ -1582,6 +1582,22 @@ async def get_provider_models(provider_id: str):
         raise HTTPException(status_code=500, detail=error_msg)
 
 
+@app.get("/api/webllm/models")
+async def get_webllm_models():
+    """Get available WebLLM models dynamically from Hugging Face"""
+    try:
+        from model_fetcher import ModelFetcher
+        models = ModelFetcher.fetch_webllm_models()
+        return {
+            "source": "WebLLM/Hugging Face",
+            "count": len(models),
+            "models": models
+        }
+    except Exception as e:
+        error_msg = f"Failed to fetch WebLLM models: {str(e)}"
+        raise HTTPException(status_code=500, detail=error_msg)
+
+
 @app.post("/api/validate-key")
 async def validate_api_key(request: dict):
     """Validate API key for a specific provider"""

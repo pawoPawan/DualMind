@@ -13,7 +13,16 @@ export class ModelManager {
     }
     
     async initialize() {
+        // Wait for config to load models
+        let retries = 0;
+        while (!config.modelsLoaded && retries < 10) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            retries++;
+        }
+        
         this.availableModels = config.getModels();
+        console.log(`📦 Model manager initialized with ${this.availableModels.length} models`);
+        
         const savedModel = storage.getCurrentModel();
         
         if (savedModel) {
@@ -22,6 +31,12 @@ export class ModelManager {
                 // Don't auto-load, just show as selected
                 ui.updateModelDisplay(model.name, model.desc);
                 config.currentModel = model.id;
+            }
+        } else if (this.availableModels.length > 0) {
+            // Show first recommended model as suggestion
+            const recommended = this.availableModels.find(m => m.recommended);
+            if (recommended) {
+                ui.updateModelDisplay(recommended.name + ' (Recommended)', recommended.desc);
             }
         }
     }
