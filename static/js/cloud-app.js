@@ -33,6 +33,11 @@ class CloudModeApp {
         // Initialize RAG
         await this.rag.initialize();
         
+        // Start with a new chat (will have empty documents)
+        this.currentChatId = Date.now();
+        this.rag.setCurrentChat(this.currentChatId);
+        console.log(`🆕 Initialized with new chat: ${this.currentChatId}`);
+        
         // Load saved settings
         this.loadSettings();
         
@@ -185,8 +190,16 @@ class CloudModeApp {
         
         if (!message || this.isGenerating) return;
         
-        if (!this.apiKey || !this.currentProvider || !this.currentModel) {
-            alert('Please select a provider and model, and enter your API key');
+        // Check prerequisites before sending
+        if (!this.currentProvider || !this.currentModel) {
+            this.ui.showNotification('⚠️ Please select a provider and model first!');
+            this.openModelSelector();
+            return;
+        }
+        
+        if (!this.apiKey) {
+            this.ui.showNotification('⚠️ Please enter your API key first!');
+            this.changeApiKey();
             return;
         }
         
@@ -215,15 +228,31 @@ class CloudModeApp {
             }
             
             // Check if we have knowledge base documents and perform RAG
+            // Show RAG search indicator if documents exist
+            if (this.rag.knowledgeBase.length > 0) {
+                this.ui.updateMessage(agentMessageId, '🔍 Searching knowledge base...');
+            }
+            
             const relevantChunks = await this.rag.searchRelevantChunks(message, 3);
             
             if (relevantChunks.length > 0) {
+                // Update to show RAG is being used
+                this.ui.updateMessage(agentMessageId, '📚 Found relevant information, generating answer...');
+                
+                console.log(`📚 RAG: Using ${relevantChunks.length} relevant chunks`);
+                relevantChunks.forEach((chunk, i) => {
+                    console.log(`  ${i+1}. ${chunk.filename} (similarity: ${chunk.similarity.toFixed(3)})`);
+                });
+                
                 let ragContext = "Here is relevant information from uploaded documents:\n\n";
                 relevantChunks.forEach((chunk, index) => {
-                    ragContext += `[From ${chunk.filename}]:\n${chunk.text}\n\n`;
+                    ragContext += `[Document: ${chunk.filename}, Relevance: ${(chunk.similarity * 100).toFixed(1)}%]\n${chunk.text}\n\n`;
                 });
                 ragContext += "Based on the above information and your knowledge, please answer the user's question.";
                 systemMessages.push({ role: 'system', content: ragContext });
+            } else if (this.rag.knowledgeBase.length > 0) {
+                console.log('📚 RAG: No relevant chunks found for this query');
+                this.ui.updateMessage(agentMessageId, '<div class="loading-dots"><span></span><span></span><span></span></div>');
             }
             
             const messages = systemMessages.length > 0 ?
@@ -298,13 +327,20 @@ class CloudModeApp {
             this.chatHistory.push({ role: 'assistant', content: fullResponse });
             this.ui.addMessageActions(agentMessageId);
             
-            // Save conversation
-            this.currentChatId = this.storage.saveConversation(
+            // Save conversation and ensure RAG is linked to this chat
+            const savedChatId = this.storage.saveConversation(
                 this.chatHistory,
                 this.currentChatTitle,
                 this.currentChatId,
                 this.currentChatContext
             );
+            
+            // If chat ID was just created, update RAG manager
+            if (!this.currentChatId || this.currentChatId !== savedChatId) {
+                this.currentChatId = savedChatId;
+                this.rag.setCurrentChat(this.currentChatId);
+            }
+            
             this.updateChatHistoryUI();
             
         } catch (error) {
@@ -361,12 +397,17 @@ class CloudModeApp {
         }
         
         this.chatHistory = [];
-        this.currentChatId = null;
+        this.currentChatId = Date.now(); // Generate new chat ID immediately
         this.currentChatTitle = customTitle;
         this.currentChatContext = null;
         this.sessionId = null;
+        
+        // Clear documents for new chat
+        this.rag.setCurrentChat(this.currentChatId);
+        
         this.ui.clearMessages();
         this.ui.showEmptyState();
+        console.log(`🆕 Started new chat: ${this.currentChatId}`);
     }
     
     loadConversation(id) {
@@ -377,8 +418,12 @@ class CloudModeApp {
             this.currentChatTitle = conv.title;
             this.currentChatContext = conv.context || null;
             
+            // Load documents for this chat
+            this.rag.setCurrentChat(this.currentChatId);
+            
             this.ui.clearMessages();
             this.ui.hideEmptyState();
+            console.log(`📂 Loaded chat: ${this.currentChatId} with ${this.rag.knowledgeBase.length} documents`);
             
             conv.messages.forEach(msg => {
                 const role = msg.role === 'user' ? 'user' : 'agent';
@@ -455,10 +500,11 @@ class CloudModeApp {
     }
     
     clearAllChats() {
-        if (confirm('Are you sure you want to delete all chat history? This action cannot be undone.')) {
+        if (confirm('Clear all chat history? This will also delete all associated documents. This cannot be undone.')) {
             this.storage.clearAllConversations();
+            this.startNewChat();
             this.updateChatHistoryUI();
-            alert('✅ All chats cleared!');
+            alert('✅ All chats and documents cleared!');
         }
     }
     
@@ -479,34 +525,39 @@ class CloudModeApp {
     }
     
     deleteChat(chatId) {
-        if (confirm('Are you sure you want to delete this chat?')) {
+        const conv = this.storage.getConversation(chatId);
+        const docCount = this.storage.getChatDocuments(chatId).length;
+        
+        let confirmMessage = 'Are you sure you want to delete this chat?';
+        if (docCount > 0) {
+            confirmMessage = `Are you sure you want to delete this chat?\n\nThis will also delete ${docCount} associated document(s).`;
+        }
+        
+        if (confirm(confirmMessage)) {
             this.storage.deleteConversation(chatId);
             this.updateChatHistoryUI();
+            
+            // If deleting current chat, start a new one
             if (this.currentChatId === chatId) {
                 this.startNewChat();
             }
-            alert('✅ Chat deleted!');
+            
+            console.log(`✅ Deleted chat ${chatId} with ${docCount} document(s)`);
         }
     }
     
     openNewChatModal() {
-        const input = document.getElementById('newChatNameInput');
-        if (input) input.value = '';
-        this.ui.showModal('newChatModal');
+        // Directly create new chat without modal
+        this.createNewChat();
     }
     
     closeNewChatModal() {
-        this.ui.hideModal('newChatModal');
+        // No longer needed, kept for compatibility
     }
     
     createNewChat() {
-        const input = document.getElementById('newChatNameInput');
-        const customName = input && input.value.trim() ? input.value.trim() : null;
-        this.startNewChat(customName);
-        this.closeNewChatModal();
-        if (customName) {
-            alert(`✅ New chat "${customName}" created!`);
-        }
+        // Simply create a new chat - it will be named from first message
+        this.startNewChat(null);
     }
     
     // Voice Input
@@ -561,15 +612,21 @@ class CloudModeApp {
 // Create and export global instance
 const app = new CloudModeApp();
 
+// Expose to window FIRST for HTML onclick handlers
+window.cloudApp = app;
+window.dualmind = app;  // Also expose as dualmind for consistency
+
 // Initialize when DOM is ready
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => app.initialize());
+    document.addEventListener('DOMContentLoaded', async () => {
+        await app.initialize();
+        console.log('✅ DualMind Cloud initialized and ready');
+    });
 } else {
-    app.initialize();
+    app.initialize().then(() => {
+        console.log('✅ DualMind Cloud initialized and ready');
+    });
 }
-
-// Expose to window for HTML onclick handlers
-window.cloudApp = app;
 
 export default app;
 

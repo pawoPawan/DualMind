@@ -354,8 +354,8 @@ cat > docs/SETUP.md << 'EOF'
 Run the setup script:
 ```bash
 cd /path/to/learn
-chmod +x setup_mobile.sh
-./setup_mobile.sh
+chmod +x doc/setup_mobile.sh
+./doc/setup_mobile.sh
 ```
 
 ## Running the App

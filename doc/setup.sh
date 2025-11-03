@@ -23,7 +23,7 @@ pip install --upgrade pip
 
 # Install dependencies
 echo "Installing dependencies..."
-pip install -r requirements.txt
+pip install -r doc/requirements.txt
 
 echo ""
 echo "================================"
@@ -34,7 +34,7 @@ echo "Next steps:"
 echo "1. Get your Google API key: https://makersuite.google.com/app/apikey"
 echo "2. Edit .env and add your API key"
 echo "3. Activate environment: source venv/bin/activate"
-echo "4. Run server: python server.py"
+echo "4. Run server: python src/server.py  (or use: ./dualmind.sh start)"
 echo "5. Open browser: http://localhost:8000"
 echo ""
 

@@ -7,7 +7,8 @@ export class StorageManager {
     constructor() {
         this.KEYS = {
             CHATS: 'dualmind_chats',
-            KB: 'dualmind_kb',
+            KB: 'dualmind_kb', // Legacy - will migrate to per-chat
+            CHAT_DOCUMENTS: 'dualmind_chat_documents', // New: per-chat documents
             CUSTOM_MEMORY: 'dualmind_custom_memory',
             DARK_MODE: 'dualmind_dark_mode',
             CURRENT_MODEL: 'dualmind_current_model',
@@ -60,6 +61,10 @@ export class StorageManager {
         const conversations = this.getAllConversations();
         const filtered = conversations.filter(c => c.id !== id);
         localStorage.setItem(this.KEYS.CHATS, JSON.stringify(filtered));
+        
+        // Also delete associated documents for this chat
+        this.clearChatDocuments(id);
+        console.log(`🗑️ Deleted chat ${id} and its associated documents`);
     }
     
     renameConversation(id, newTitle) {
@@ -82,9 +87,40 @@ export class StorageManager {
     
     clearAllConversations() {
         localStorage.removeItem(this.KEYS.CHATS);
+        
+        // Also clear all chat documents
+        localStorage.removeItem(this.KEYS.CHAT_DOCUMENTS);
+        console.log('🗑️ Cleared all conversations and their associated documents');
     }
     
-    // Knowledge Base
+    // Per-Chat Documents (New System)
+    getChatDocuments(chatId) {
+        if (!chatId) return [];
+        
+        const allDocs = localStorage.getItem(this.KEYS.CHAT_DOCUMENTS);
+        const docsMap = allDocs ? JSON.parse(allDocs) : {};
+        return docsMap[chatId] || [];
+    }
+    
+    saveChatDocuments(chatId, documents) {
+        if (!chatId) return;
+        
+        const allDocs = localStorage.getItem(this.KEYS.CHAT_DOCUMENTS);
+        const docsMap = allDocs ? JSON.parse(allDocs) : {};
+        docsMap[chatId] = documents;
+        localStorage.setItem(this.KEYS.CHAT_DOCUMENTS, JSON.stringify(docsMap));
+    }
+    
+    clearChatDocuments(chatId) {
+        if (!chatId) return;
+        
+        const allDocs = localStorage.getItem(this.KEYS.CHAT_DOCUMENTS);
+        const docsMap = allDocs ? JSON.parse(allDocs) : {};
+        delete docsMap[chatId];
+        localStorage.setItem(this.KEYS.CHAT_DOCUMENTS, JSON.stringify(docsMap));
+    }
+    
+    // Legacy Knowledge Base (for backward compatibility)
     getKnowledgeBase() {
         const data = localStorage.getItem(this.KEYS.KB);
         return data ? JSON.parse(data) : [];

@@ -107,7 +107,7 @@
                     ></textarea>
                     <div class="input-actions">
                         <button class="input-btn" id="voiceBtn" onclick="dualmind.toggleVoice()" title="Voice input">🎤</button>
-                        <button class="input-btn primary" id="sendBtn" onclick="dualmind.sendMessage()" disabled title="Send">➤</button>
+                        <button class="input-btn primary" id="sendBtn" onclick="dualmind.sendMessage()" title="Send">➤</button>
                     </div>
                 </div>
                 <div class="input-hint">
@@ -207,37 +207,8 @@
         <button class="context-menu-item" onclick="dualmind.deleteChatPrompt()">🗑️ Delete</button>
     </div>
     
-    <!-- New Chat Modal -->
-    <div class="modal" id="newChatModal">
-        <div class="modal-content small">
-            <div class="modal-header">
-                <h2>💬 New Chat</h2>
-                <button class="close-modal" onclick="dualmind.closeNewChatModal()">×</button>
-            </div>
-            <div style="padding: 20px;">
-                <label class="setting-label">Chat Name (Optional)</label>
-                <input 
-                    type="text" 
-                    id="newChatNameInput" 
-                    class="chat-name-input"
-                    placeholder="Leave empty to use first message"
-                    style="width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px;"
-                >
-                <div style="display: flex; gap: 10px; margin-top: 20px;">
-                    <button class="save-btn" onclick="dualmind.createNewChat()">✅ Create</button>
-                    <button class="cancel-btn" onclick="dualmind.closeNewChatModal()">❌ Cancel</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    
     <!-- DualMind Application -->
-    <script type="module">
-        // Import DualMind app - it will auto-initialize and expose to window
-        await import('/static/js/app.js');
-        
-        console.log('✅ DualMind loaded');
-    </script>
+    <script type="module" src="/static/js/app.js"></script>
 </body>
 </html>
 

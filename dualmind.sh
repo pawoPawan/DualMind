@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # DualMind AI Chatbot Management Script
-# Usage: ./dualmind.sh [start|stop|restart|status|logs|help]
+# Usage: ./dualmind.sh [start|stop|restart|status|logs|test|help]
 
 # Colors for output
 RED='\033[0;31m'
@@ -84,7 +84,7 @@ start_server() {
     fi
     
     # Start the server in background
-    nohup python server.py > "$LOG_FILE" 2>&1 &
+    nohup python src/server.py > "$LOG_FILE" 2>&1 &
     SERVER_PID=$!
     echo $SERVER_PID > "$PID_FILE"
     
@@ -232,6 +232,33 @@ show_logs() {
     tail -f "$LOG_FILE"
 }
 
+# Run all tests
+run_tests() {
+    print_banner
+    echo -e "${CYAN}🧪 Running DualMind Test Suite...${NC}"
+    echo ""
+    
+    # Check if test runner exists
+    TEST_RUNNER="$SCRIPT_DIR/tests/run_all_tests.py"
+    if [ ! -f "$TEST_RUNNER" ]; then
+        echo -e "${RED}❌ Test runner not found: $TEST_RUNNER${NC}"
+        return 1
+    fi
+    
+    # Run the tests
+    python3 "$TEST_RUNNER"
+    TEST_EXIT_CODE=$?
+    
+    echo ""
+    if [ $TEST_EXIT_CODE -eq 0 ]; then
+        echo -e "${GREEN}✅ All tests completed successfully!${NC}"
+    else
+        echo -e "${RED}❌ Some tests failed. Review output above.${NC}"
+    fi
+    
+    return $TEST_EXIT_CODE
+}
+
 # Show help
 show_help() {
     print_banner
@@ -244,6 +271,7 @@ show_help() {
     echo -e "  ${GREEN}restart${NC}    Restart the chatbot server"
     echo -e "  ${GREEN}status${NC}     Show server status and info"
     echo -e "  ${GREEN}logs${NC}       Show server logs (live tail)"
+    echo -e "  ${GREEN}test${NC}       Run all automated tests"
     echo -e "  ${GREEN}help${NC}       Show this help message"
     echo ""
     echo -e "${BLUE}Examples:${NC}"
@@ -251,6 +279,7 @@ show_help() {
     echo -e "  ./dualmind.sh status    ${CYAN}# Check if running${NC}"
     echo -e "  ./dualmind.sh restart   ${CYAN}# Restart the server${NC}"
     echo -e "  ./dualmind.sh logs      ${CYAN}# Watch logs in real-time${NC}"
+    echo -e "  ./dualmind.sh test      ${CYAN}# Run all tests${NC}"
     echo ""
     echo -e "${BLUE}Quick Access:${NC}"
     echo -e "  After starting, open: ${CYAN}http://localhost:$PORT${NC}"
@@ -281,6 +310,9 @@ main() {
             ;;
         logs)
             show_logs
+            ;;
+        test)
+            run_tests
             ;;
         help|--help|-h)
             show_help

@@ -33,12 +33,20 @@ export class UIManager {
     }
     
     setupEventListeners() {
-        // Input auto-resize
+        // Input change detection for send button
         if (this.elements.userInput) {
             this.elements.userInput.addEventListener('input', () => {
                 this.updateSendButton();
             });
+            
+            // Also check on focus in case value was set programmatically
+            this.elements.userInput.addEventListener('focus', () => {
+                this.updateSendButton();
+            });
         }
+        
+        // Initialize send button state
+        this.updateSendButton();
     }
     
     setupAutoResize() {

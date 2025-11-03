@@ -28,7 +28,7 @@ That's it! Choose **Cloud Mode** (with API key) or **Local Mode** (no API key re
 
 ```bash
 # Setup (one-time)
-./setup_mobile.sh
+./doc/setup_mobile.sh
 
 # Start backend
 ./dualmind.sh start
@@ -85,14 +85,20 @@ Scan QR code with **Expo Go** app ([iOS](https://apps.apple.com/app/expo-go/id98
 ```
 DualMind/
 ├── 🌐 WEB APPLICATION
-│   ├── server.py                    # FastAPI backend
+│   ├── src/                         # Python backend source
+│   │   ├── server.py                # FastAPI backend
+│   │   ├── branding_config.py       # Customization config
+│   │   ├── cloud_providers.py       # Multi-cloud integration
+│   │   ├── model_fetcher.py         # Dynamic model loading
+│   │   ├── embedding_service.py     # RAG embedding service
+│   │   └── document_processor.py    # Document processing for RAG
+│   ├── doc/                         # Documentation & Setup
+│   │   ├── DOCUMENTATION.md         # Complete user guide
+│   │   ├── PRODUCTION_READINESS_REPORT.md  # Production guide
+│   │   ├── requirements.txt         # Python dependencies
+│   │   ├── setup.sh                 # Backend setup script
+│   │   └── setup_mobile.sh          # Mobile setup script
 │   ├── dualmind.sh                  # Server manager (start/stop/status)
-│   ├── branding_config.py           # Customization config
-│   ├── cloud_providers.py           # Multi-cloud integration
-│   ├── model_fetcher.py             # Dynamic model loading
-│   ├── embedding_service.py         # RAG embedding service
-│   ├── document_processor.py        # Document processing for RAG
-│   ├── requirements.txt             # Python dependencies
 │   └── static/
 │       ├── css/local.css            # Modular CSS
 │       ├── js/                      # Modular JavaScript
@@ -116,7 +122,6 @@ DualMind/
 │   │       ├── services/            # API client
 │   │       ├── screens/             # Mobile screens
 │   │       └── components/          # React Native components
-│   └── setup_mobile.sh              # Setup script
 │
 ├── 🧪 TESTS
 │   ├── tests/
@@ -267,10 +272,10 @@ gunicorn server:app -w 4 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
 ```dockerfile
 FROM python:3.11-slim
 WORKDIR /app
-COPY requirements.txt .
-RUN pip install -r requirements.txt
+COPY doc/requirements.txt ./doc/requirements.txt
+RUN pip install -r doc/requirements.txt
 COPY . .
-CMD ["python", "server.py"]
+CMD ["python", "src/server.py"]
 ```
 
 **Cloud Platforms**:
@@ -322,20 +327,22 @@ eas update --branch production
 
 ## 🧪 Testing
 
+Run all tests with a single command:
 ```bash
-# Install test dependencies
-pip install -r tests/requirements-test.txt
+# Run all automated tests with consolidated summary
+./dualmind.sh test
+```
 
-# Run all tests
-pytest
+Or run individual test suites:
+```bash
+# RAG integration tests
+python3 tests/run_rag_tests.py
 
-# Run with coverage
-pytest --cov=. --cov-report=html
-
-# Run specific test suite
-pytest tests/unit/
+# Pytest (if installed)
 pytest tests/integration/
-pytest tests/ui/
+
+# Master test runner directly
+python3 tests/run_all_tests.py
 ```
 
 See `tests/README.md` for comprehensive testing documentation.
@@ -352,7 +359,7 @@ See `tests/README.md` for comprehensive testing documentation.
 - **Performance**: Local mode works best with dedicated GPU
 
 ### Mobile Application
-- **Setup**: Run `./setup_mobile.sh` before first use
+- **Setup**: Run `./doc/setup_mobile.sh` before first use
 - **Network**: Ensure phone and computer on same WiFi for testing
 - **IP Address**: Update API URL in `mobile/src/config/api.js` for real devices
 - **Caching**: Run `expo start -c` if you encounter issues
@@ -429,11 +436,9 @@ npx expo start
 
 ## 📖 Documentation
 
-- **[ADVANCED_FEATURES.md](ADVANCED_FEATURES.md)** - Markdown, voice input, dark mode, export, chat history
-- **[RAG_GUIDE.md](RAG_GUIDE.md)** - Local RAG implementation with Transformers.js
-- **[CLOUD_RAG_GUIDE.md](CLOUD_RAG_GUIDE.md)** - Cloud RAG with multiple embedding providers
-- **[EXPO_CONNECTION_GUIDE.md](EXPO_CONNECTION_GUIDE.md)** - Mobile connection troubleshooting
-- **[tests/README.md](tests/README.md)** - Testing documentation
+- **[DOCUMENTATION.md](doc/DOCUMENTATION.md)** - Complete User Guide (Features, Setup, Troubleshooting)
+- **[PRODUCTION_READINESS_REPORT.md](doc/PRODUCTION_READINESS_REPORT.md)** - Deployment & Production Guide
+- **[tests/README.md](tests/README.md)** - Testing Documentation
 
 ---
 
@@ -538,7 +543,7 @@ MIT License - Open source, free to use and modify.
 ./dualmind.sh stop
 
 # Mobile: Setup
-./setup_mobile.sh
+./doc/setup_mobile.sh
 
 # Mobile: Start
 cd mobile && npm start

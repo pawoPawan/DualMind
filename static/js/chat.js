@@ -16,7 +16,21 @@ export class ChatManager {
     }
     
     async sendMessage(message) {
-        if (!message || !message.trim() || !config.engine || config.isGenerating) {
+        if (!message || !message.trim()) {
+            return;
+        }
+        
+        // Check if model is loaded
+        if (!config.engine) {
+            ui.showNotification('⚠️ Please select and load a model first!');
+            // Open model selector to help user
+            if (window.dualmind && window.dualmind.openModelSelector) {
+                window.dualmind.openModelSelector();
+            }
+            return;
+        }
+        
+        if (config.isGenerating) {
             return;
         }
         
@@ -48,15 +62,32 @@ export class ChatManager {
             
             // Check if we have knowledge base documents and perform RAG
             const { rag } = await import('./rag.js');
+            
+            // Show RAG search indicator if documents exist
+            if (rag.knowledgeBase.length > 0) {
+                ui.updateMessage(agentMessageId, '🔍 Searching knowledge base...');
+            }
+            
             const relevantChunks = await rag.searchRelevantChunks(message, 3);
             
             if (relevantChunks.length > 0) {
+                // Update to show RAG is being used
+                ui.updateMessage(agentMessageId, '📚 Found relevant information, generating answer...');
+                
+                console.log(`📚 RAG: Using ${relevantChunks.length} relevant chunks`);
+                relevantChunks.forEach((chunk, i) => {
+                    console.log(`  ${i+1}. ${chunk.filename} (similarity: ${chunk.similarity.toFixed(3)})`);
+                });
+                
                 let ragContext = "Here is relevant information from uploaded documents:\n\n";
                 relevantChunks.forEach((chunk, index) => {
-                    ragContext += `[From ${chunk.filename}]:\n${chunk.text}\n\n`;
+                    ragContext += `[Document: ${chunk.filename}, Relevance: ${(chunk.similarity * 100).toFixed(1)}%]\n${chunk.text}\n\n`;
                 });
                 ragContext += "Based on the above information and your knowledge, please answer the user's question.";
                 systemMessages.push({ role: 'system', content: ragContext });
+            } else if (rag.knowledgeBase.length > 0) {
+                console.log('📚 RAG: No relevant chunks found for this query');
+                ui.updateMessage(agentMessageId, '<div class="loading-dots"><span></span><span></span><span></span></div>');
             }
             
             const messages = systemMessages.length > 0 ?
@@ -84,13 +115,21 @@ export class ChatManager {
             this.chatHistory.push({ role: 'assistant', content: fullResponse });
             ui.addMessageActions(agentMessageId);
             
-            // Save conversation
-            this.currentChatId = storage.saveConversation(
+            // Save conversation and ensure RAG is linked to this chat
+            const savedChatId = storage.saveConversation(
                 this.chatHistory, 
                 this.currentChatTitle, 
                 this.currentChatId,
                 this.currentChatContext
             );
+            
+            // If chat ID was just created, update RAG manager
+            if (!this.currentChatId || this.currentChatId !== savedChatId) {
+                this.currentChatId = savedChatId;
+                const { rag } = await import('./rag.js');
+                rag.setCurrentChat(this.currentChatId);
+            }
+            
             this.updateChatHistoryUI();
             
         } catch (error) {
@@ -124,7 +163,7 @@ export class ChatManager {
         }
     }
     
-    startNewChat(customTitle = null) {
+    async startNewChat(customTitle = null) {
         if (this.chatHistory.length > 0) {
             storage.saveConversation(
                 this.chatHistory, 
@@ -136,14 +175,20 @@ export class ChatManager {
         }
         
         this.chatHistory = [];
-        this.currentChatId = null;
+        this.currentChatId = Date.now(); // Generate new chat ID immediately
         this.currentChatTitle = customTitle;
         this.currentChatContext = null;
+        
+        // Clear documents for new chat
+        const { rag } = await import('./rag.js');
+        rag.setCurrentChat(this.currentChatId);
+        
         ui.clearMessages();
         ui.showEmptyState();
+        console.log(`🆕 Started new chat: ${this.currentChatId}`);
     }
     
-    loadConversation(id) {
+    async loadConversation(id) {
         const conv = storage.getConversation(id);
         if (conv) {
             this.chatHistory = conv.messages;
@@ -151,8 +196,13 @@ export class ChatManager {
             this.currentChatTitle = conv.title;
             this.currentChatContext = conv.context || null;
             
+            // Load documents for this chat
+            const { rag } = await import('./rag.js');
+            rag.setCurrentChat(this.currentChatId);
+            
             ui.clearMessages();
             ui.hideEmptyState();
+            console.log(`📂 Loaded chat: ${this.currentChatId} with ${rag.knowledgeBase.length} documents`);
             
             conv.messages.forEach(msg => {
                 const role = msg.role === 'user' ? 'user' : 'agent';

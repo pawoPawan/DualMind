@@ -14,13 +14,26 @@ export class RAGManager {
         this.currentEmbeddingModel = 'Xenova/all-MiniLM-L6-v2';
         this.embedder = null;
         this.isEmbedderLoaded = false;
+        this.currentChatId = null; // Track current chat
     }
     
     async initialize() {
-        this.knowledgeBase = storage.getKnowledgeBase();
+        // Don't load any documents on init - wait for chat to be set
         this.currentEmbeddingModel = storage.getEmbeddingModel();
         await this.loadAvailableModels();
         // Don't load embedder until needed to save resources
+    }
+    
+    // Set current chat and load its documents
+    setCurrentChat(chatId) {
+        this.currentChatId = chatId;
+        this.knowledgeBase = chatId ? storage.getChatDocuments(chatId) : [];
+        console.log(`📚 RAG: Loaded ${this.knowledgeBase.length} documents for chat ${chatId}`);
+    }
+    
+    // Get current chat's documents
+    getCurrentDocuments() {
+        return this.knowledgeBase;
     }
     
     async loadEmbedder() {
@@ -131,62 +144,113 @@ export class RAGManager {
         const files = event.target.files;
         if (!files || files.length === 0) return;
         
-        ui.showLoadingIndicator('Processing documents...');
+        ui.showLoadingIndicator('📚 Initializing document processing...');
         
         try {
-            // Ensure embedder is loaded
+            // Ensure embedder is loaded first
+            ui.updateLoadingProgress(5, '🔄 Loading embedding model...');
             await this.loadEmbedder();
+            ui.updateLoadingProgress(10, '✅ Embedding model ready!');
             
-            for (const file of files) {
+            let totalChunks = 0;
+            let processedChunks = 0;
+            
+            for (let fileIndex = 0; fileIndex < files.length; fileIndex++) {
+                const file = files[fileIndex];
                 try {
-                    ui.updateLoadingProgress(0, `Processing ${file.name}...`);
+                    const fileProgress = (fileIndex / files.length) * 100;
+                    
+                    ui.updateLoadingProgress(
+                        fileProgress, 
+                        `📄 Reading ${file.name} (${fileIndex + 1}/${files.length})...`
+                    );
                     
                     const text = await file.text();
+                    const wordCount = text.split(/\s+/).length;
                     
                     // Split into chunks
-                    ui.updateLoadingProgress(30, `Chunking ${file.name}...`);
+                    ui.updateLoadingProgress(
+                        fileProgress + 10, 
+                        `✂️ Splitting ${file.name} into chunks (${wordCount} words)...`
+                    );
                     const chunks = this.chunkText(text);
+                    totalChunks += chunks.length;
+                    
+                    console.log(`📊 ${file.name}: ${chunks.length} chunks created`);
                     
                     // Generate embeddings for all chunks
-                    ui.updateLoadingProgress(50, `Generating embeddings for ${file.name}...`);
+                    ui.updateLoadingProgress(
+                        fileProgress + 20, 
+                        `🧮 Indexing ${file.name} (0/${chunks.length} chunks)...`
+                    );
                     const embeddings = [];
                     
                     for (let i = 0; i < chunks.length; i++) {
                         const embedding = await this.embed(chunks[i]);
                         if (embedding) {
                             embeddings.push(embedding);
+                            processedChunks++;
                         }
                         
-                        // Update progress
-                        const progress = 50 + (i / chunks.length) * 40;
-                        ui.updateLoadingProgress(progress, `Embedding chunk ${i + 1}/${chunks.length}...`);
+                        // Update progress with detailed info
+                        const chunkProgress = fileProgress + 20 + ((i + 1) / chunks.length) * 60;
+                        ui.updateLoadingProgress(
+                            chunkProgress, 
+                            `🧮 Indexing ${file.name}: ${i + 1}/${chunks.length} chunks embedded (${Math.round((i + 1) / chunks.length * 100)}%)`
+                        );
                     }
                     
+                    // Store indexed document
                     this.knowledgeBase.push({
                         name: file.name,
                         content: text,
                         chunks: chunks,
                         embeddings: embeddings,
-                        timestamp: Date.now()
+                        timestamp: Date.now(),
+                        wordCount: wordCount,
+                        chunkCount: chunks.length
                     });
                     
-                    ui.updateLoadingProgress(100, `${file.name} processed!`);
+                    ui.updateLoadingProgress(
+                        fileProgress + 80, 
+                        `✅ ${file.name} indexed: ${chunks.length} chunks, ${wordCount} words`
+                    );
+                    
+                    console.log(`✅ Successfully indexed: ${file.name}`);
                     
                 } catch (error) {
                     console.error('Error processing file:', error);
-                    alert(`Error processing ${file.name}: ${error.message}`);
+                    ui.showNotification(`❌ Error processing ${file.name}: ${error.message}`);
                 }
             }
             
-            storage.saveKnowledgeBase(this.knowledgeBase);
+            // Save documents to current chat
+            if (this.currentChatId) {
+                storage.saveChatDocuments(this.currentChatId, this.knowledgeBase);
+                console.log(`💾 Saved ${this.knowledgeBase.length} documents to chat ${this.currentChatId}`);
+            }
+            
             this.displayUploadedFiles();
-            alert(`✅ ${files.length} file(s) processed successfully!`);
+            
+            ui.updateLoadingProgress(100, '🎉 All documents indexed!');
+            
+            // Show success summary
+            setTimeout(() => {
+                ui.showNotification(
+                    `✅ Successfully indexed ${files.length} document(s)\n` +
+                    `📊 Total: ${processedChunks} chunks from ${totalChunks} segments\n` +
+                    `🔍 Ready for semantic search!\n` +
+                    `💬 Documents linked to this chat`
+                );
+            }, 500);
             
         } catch (error) {
             console.error('Error uploading files:', error);
-            alert(`Error: ${error.message}`);
+            ui.showNotification(`❌ Error: ${error.message}`);
         } finally {
-            ui.hideLoadingIndicator();
+            setTimeout(() => {
+                ui.hideLoadingIndicator();
+            }, 1500);
         }
     }
     
@@ -201,16 +265,37 @@ export class RAGManager {
             return;
         }
         
+        // Add summary header
+        const totalChunks = this.knowledgeBase.reduce((sum, doc) => sum + (doc.chunkCount || doc.chunks?.length || 0), 0);
+        const totalWords = this.knowledgeBase.reduce((sum, doc) => sum + (doc.wordCount || 0), 0);
+        
+        const summaryDiv = document.createElement('div');
+        summaryDiv.style.cssText = 'padding: 10px; margin-bottom: 10px; background: rgba(0,123,255,0.1); border-radius: 8px; font-size: 0.9em;';
+        summaryDiv.innerHTML = `
+            <strong>📊 Knowledge Base Summary:</strong><br>
+            📄 ${this.knowledgeBase.length} document(s) | 
+            🧩 ${totalChunks} chunks | 
+            📝 ${totalWords.toLocaleString()} words
+        `;
+        container.appendChild(summaryDiv);
+        
+        // Display individual files
         this.knowledgeBase.forEach((file, index) => {
             const fileDiv = document.createElement('div');
             fileDiv.className = 'chat-item';
-            fileDiv.style.display = 'flex';
-            fileDiv.style.justifyContent = 'space-between';
-            fileDiv.style.alignItems = 'center';
+            fileDiv.style.cssText = 'display: flex; flex-direction: column; gap: 5px; padding: 10px;';
             
             fileDiv.innerHTML = `
-                <span>📄 ${file.name}</span>
-                <button class="action-btn" onclick="window.dualmind.removeDocument(${index})" style="background: #f44;">✕</button>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-weight: 500;">📄 ${file.name}</span>
+                    <button class="action-btn" onclick="window.dualmind.removeDocument(${index})" 
+                            style="background: #f44;" title="Remove document">✕</button>
+                </div>
+                <div style="font-size: 0.85em; color: #888;">
+                    🧩 ${file.chunkCount || file.chunks?.length || 0} chunks | 
+                    📝 ${(file.wordCount || 0).toLocaleString()} words |
+                    ⏰ ${new Date(file.timestamp).toLocaleString()}
+                </div>
             `;
             
             container.appendChild(fileDiv);
@@ -218,18 +303,24 @@ export class RAGManager {
     }
     
     removeDocument(index) {
-        if (confirm('Remove this document?')) {
+        if (confirm('Remove this document from this chat?')) {
             this.knowledgeBase.splice(index, 1);
-            storage.saveKnowledgeBase(this.knowledgeBase);
+            if (this.currentChatId) {
+                storage.saveChatDocuments(this.currentChatId, this.knowledgeBase);
+            }
             this.displayUploadedFiles();
+            console.log(`🗑️ Removed document from chat ${this.currentChatId}`);
         }
     }
     
     clearAllDocuments() {
-        if (confirm('Clear all documents?')) {
+        if (confirm('Clear all documents from this chat?')) {
             this.knowledgeBase = [];
-            storage.saveKnowledgeBase(this.knowledgeBase);
+            if (this.currentChatId) {
+                storage.saveChatDocuments(this.currentChatId, this.knowledgeBase);
+            }
             this.displayUploadedFiles();
+            console.log(`🗑️ Cleared all documents from chat ${this.currentChatId}`);
         }
     }
 }

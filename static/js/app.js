@@ -29,6 +29,11 @@ class DualMindApp {
         await this.models.initialize();
         await this.rag.initialize();
         
+        // Start with a new chat (will have empty documents)
+        this.chat.currentChatId = Date.now();
+        this.rag.setCurrentChat(this.chat.currentChatId);
+        console.log(`🆕 Initialized with new chat: ${this.chat.currentChatId}`);
+        
         // Load chat history
         this.chat.updateChatHistoryUI();
         
@@ -74,8 +79,8 @@ class DualMindApp {
         this.chat.copyMessage(messageId);
     }
     
-    loadConversation(id) {
-        this.chat.loadConversation(id);
+    async loadConversation(id) {
+        await this.chat.loadConversation(id);
     }
     
     exportChat() {
@@ -176,11 +181,12 @@ class DualMindApp {
         }
     }
     
-    clearAllChats() {
-        if (confirm('Are you sure you want to delete all chat history? This action cannot be undone.')) {
+    async clearAllChats() {
+        if (confirm('Clear all chat history? This will also delete all associated documents. This cannot be undone.')) {
             this.storage.clearAllConversations();
+            await this.chat.startNewChat();
             this.chat.updateChatHistoryUI();
-            alert('✅ All chats cleared!');
+            alert('✅ All chats and documents cleared!');
         }
     }
     
@@ -199,36 +205,40 @@ class DualMindApp {
         }
     }
     
-    deleteChat(chatId) {
-        if (confirm('Are you sure you want to delete this chat?')) {
+    async deleteChat(chatId) {
+        const conv = this.storage.getConversation(chatId);
+        const docCount = this.storage.getChatDocuments(chatId).length;
+        
+        let confirmMessage = 'Are you sure you want to delete this chat?';
+        if (docCount > 0) {
+            confirmMessage = `Are you sure you want to delete this chat?\n\nThis will also delete ${docCount} associated document(s).`;
+        }
+        
+        if (confirm(confirmMessage)) {
             this.storage.deleteConversation(chatId);
             this.chat.updateChatHistoryUI();
+            
+            // If deleting current chat, start a new one
             if (this.chat.currentChatId === chatId) {
-                this.chat.startNewChat();
+                await this.chat.startNewChat();
             }
-            // Show notification only once
-            alert('✅ Chat deleted!');
+            
+            console.log(`✅ Deleted chat ${chatId} with ${docCount} document(s)`);
         }
     }
     
     openNewChatModal() {
-        const input = document.getElementById('newChatNameInput');
-        if (input) input.value = '';
-        this.ui.showModal('newChatModal');
+        // Directly create new chat without modal
+        this.createNewChat();
     }
     
     closeNewChatModal() {
-        this.ui.hideModal('newChatModal');
+        // No longer needed, kept for compatibility
     }
     
-    createNewChat() {
-        const input = document.getElementById('newChatNameInput');
-        const customName = input && input.value.trim() ? input.value.trim() : null;
-        this.chat.startNewChat(customName);
-        this.closeNewChatModal();
-        if (customName) {
-            alert(`✅ New chat "${customName}" created!`);
-        }
+    async createNewChat() {
+        // Simply create a new chat - it will be named from first message
+        await this.chat.startNewChat(null);
     }
     
     switchToCloudMode() {
@@ -239,15 +249,20 @@ class DualMindApp {
 // Create and export global instance
 const app = new DualMindApp();
 
+// Expose to window FIRST for HTML onclick handlers
+window.dualmind = app;
+
 // Initialize when DOM is ready
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => app.initialize());
+    document.addEventListener('DOMContentLoaded', async () => {
+        await app.initialize();
+        console.log('✅ DualMind initialized and ready');
+    });
 } else {
-    app.initialize();
+    app.initialize().then(() => {
+        console.log('✅ DualMind initialized and ready');
+    });
 }
-
-// Expose to window for HTML onclick handlers
-window.dualmind = app;
 
 export default app;
 
