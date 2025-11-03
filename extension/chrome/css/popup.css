@@ -418,3 +418,30 @@ body {
   font-size: 14px;
 }
 
+/* Creator Badge */
+.creator-badge {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 6px 12px;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border);
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-secondary);
+  z-index: 1000;
+}
+
+.creator-badge a {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+
+.creator-badge a:hover {
+  color: var(--primary-dark);
+  text-decoration: underline;
+}
+

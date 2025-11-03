@@ -277,3 +277,29 @@ footer {
   color: var(--error);
 }
 
+/* Creator Info */
+footer .creator-info {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  text-align: center;
+}
+
+footer .creator-info p {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+footer .creator-info a {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+
+footer .creator-info a:hover {
+  color: var(--primary-dark);
+  text-decoration: underline;
+}
+
