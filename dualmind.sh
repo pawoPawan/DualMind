@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # DualMind AI Chatbot Management Script
+# Cross-platform compatible: Linux, macOS, Windows (Git Bash/WSL)
 # Usage: ./dualmind.sh [start|stop|restart|status|logs|test|help]
 
 # Colors for output
@@ -17,6 +18,45 @@ PORT=8000
 PID_FILE="/tmp/dualmind_server.pid"
 LOG_FILE="/tmp/dualmind_server.log"
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+# Detect OS and environment
+detect_os() {
+    case "$(uname -s)" in
+        Linux*)     OS="Linux";;
+        Darwin*)    OS="macOS";;
+        CYGWIN*|MINGW*|MSYS*)    OS="Windows";;
+        *)          OS="Unknown";;
+    esac
+}
+
+# Detect Python command
+detect_python() {
+    if command -v python3 &> /dev/null; then
+        PYTHON_CMD="python3"
+    elif command -v python &> /dev/null; then
+        PYTHON_CMD="python"
+    else
+        echo -e "${RED}❌ Python not found. Please install Python 3.9+${NC}"
+        exit 1
+    fi
+}
+
+# Get virtual environment activation script path
+get_venv_activate() {
+    # Check for Unix-style activation (Linux, macOS, Git Bash, WSL)
+    if [ -f ".venv/bin/activate" ]; then
+        echo ".venv/bin/activate"
+    # Check for Windows-style activation (in case running in certain contexts)
+    elif [ -f ".venv/Scripts/activate" ]; then
+        echo ".venv/Scripts/activate"
+    else
+        echo ""
+    fi
+}
+
+# Initialize
+detect_os
+detect_python
 
 # Banner
 print_banner() {
@@ -62,20 +102,46 @@ start_server() {
     # Check if virtual environment exists
     if [ ! -d ".venv" ]; then
         echo -e "${YELLOW}⚠️  Virtual environment not found. Creating...${NC}"
-        python3 -m venv .venv
+        $PYTHON_CMD -m venv .venv
         if [ $? -ne 0 ]; then
             echo -e "${RED}❌ Failed to create virtual environment.${NC}"
+            echo -e "${YELLOW}   Try: $PYTHON_CMD -m pip install --upgrade pip${NC}"
             return 1
         fi
     fi
     
+    # Get virtual environment activation script
+    VENV_ACTIVATE=$(get_venv_activate)
+    if [ -z "$VENV_ACTIVATE" ]; then
+        echo -e "${RED}❌ Virtual environment activation script not found.${NC}"
+        return 1
+    fi
+    
     # Activate virtual environment
-    source .venv/bin/activate
+    source "$VENV_ACTIVATE"
+    
+    # Verify Python is from virtual environment
+    if [ $? -ne 0 ]; then
+        echo -e "${RED}❌ Failed to activate virtual environment.${NC}"
+        return 1
+    fi
+    
+    # Check if requirements file exists
+    REQUIREMENTS_FILE="$SCRIPT_DIR/doc/requirements.txt"
+    if [ ! -f "$REQUIREMENTS_FILE" ]; then
+        REQUIREMENTS_FILE="$SCRIPT_DIR/requirements.txt"
+    fi
+    
+    if [ ! -f "$REQUIREMENTS_FILE" ]; then
+        echo -e "${RED}❌ requirements.txt not found.${NC}"
+        deactivate
+        return 1
+    fi
     
     # Check if requirements are installed
-    if ! python -c "import fastapi" 2>/dev/null; then
+    if ! $PYTHON_CMD -c "import fastapi" 2>/dev/null; then
         echo -e "${YELLOW}⚠️  Dependencies not installed. Installing...${NC}"
-        pip install -r "$SCRIPT_DIR/requirements.txt"
+        pip install -r "$REQUIREMENTS_FILE"
         if [ $? -ne 0 ]; then
             echo -e "${RED}❌ Failed to install dependencies.${NC}"
             deactivate
@@ -84,7 +150,7 @@ start_server() {
     fi
     
     # Start the server in background
-    nohup python src/server.py > "$LOG_FILE" 2>&1 &
+    nohup $PYTHON_CMD src/server.py > "$LOG_FILE" 2>&1 &
     SERVER_PID=$!
     echo $SERVER_PID > "$PID_FILE"
     
@@ -187,7 +253,7 @@ show_status() {
             echo -e "${BLUE}Health:${NC}     ${GREEN}Healthy ✓${NC}"
             
             # Get version info
-            VERSION=$(curl -s http://localhost:$PORT/health | python3 -c "import sys, json; print(json.load(sys.stdin).get('version', 'unknown'))" 2>/dev/null)
+            VERSION=$(curl -s http://localhost:$PORT/health | $PYTHON_CMD -c "import sys, json; print(json.load(sys.stdin).get('version', 'unknown'))" 2>/dev/null)
             if [ ! -z "$VERSION" ]; then
                 echo -e "${BLUE}Version:${NC}    $VERSION"
             fi
@@ -246,7 +312,7 @@ run_tests() {
     fi
     
     # Run the tests
-    python3 "$TEST_RUNNER"
+    $PYTHON_CMD "$TEST_RUNNER"
     TEST_EXIT_CODE=$?
     
     echo ""
@@ -262,6 +328,9 @@ run_tests() {
 # Show help
 show_help() {
     print_banner
+    echo -e "${BLUE}Platform:${NC} $OS"
+    echo -e "${BLUE}Python:${NC}   $PYTHON_CMD"
+    echo ""
     echo -e "${BLUE}Usage:${NC}"
     echo -e "  ./dualmind.sh [command]"
     echo ""
@@ -281,11 +350,16 @@ show_help() {
     echo -e "  ./dualmind.sh logs      ${CYAN}# Watch logs in real-time${NC}"
     echo -e "  ./dualmind.sh test      ${CYAN}# Run all tests${NC}"
     echo ""
+    echo -e "${BLUE}Platform Support:${NC}"
+    echo -e "  ${GREEN}✓${NC} Linux (native bash)"
+    echo -e "  ${GREEN}✓${NC} macOS (native bash)"
+    echo -e "  ${GREEN}✓${NC} Windows (Git Bash or WSL)"
+    echo ""
     echo -e "${BLUE}Quick Access:${NC}"
     echo -e "  After starting, open: ${CYAN}http://localhost:$PORT${NC}"
     echo ""
     echo -e "${BLUE}Customization:${NC}"
-    echo -e "  Edit ${GREEN}branding_config.py${NC} to customize names, colors, and text"
+    echo -e "  Edit ${GREEN}src/branding_config.py${NC} to customize names, colors, and text"
     echo ""
     echo "============================================================"
 }
