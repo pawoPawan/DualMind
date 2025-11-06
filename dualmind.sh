@@ -29,7 +29,7 @@ detect_os() {
     esac
 }
 
-# Detect Python command
+# Detect Python command and verify version
 detect_python() {
     if command -v python3 &> /dev/null; then
         PYTHON_CMD="python3"
@@ -37,6 +37,16 @@ detect_python() {
         PYTHON_CMD="python"
     else
         echo -e "${RED}❌ Python not found. Please install Python 3.9+${NC}"
+        exit 1
+    fi
+    
+    # Verify Python version (3.9+)
+    PYTHON_VERSION=$($PYTHON_CMD --version 2>&1 | awk '{print $2}')
+    PYTHON_MAJOR=$(echo $PYTHON_VERSION | cut -d. -f1)
+    PYTHON_MINOR=$(echo $PYTHON_VERSION | cut -d. -f2)
+    
+    if [ "$PYTHON_MAJOR" -lt 3 ] || ([ "$PYTHON_MAJOR" -eq 3 ] && [ "$PYTHON_MINOR" -lt 9 ]); then
+        echo -e "${RED}❌ Python 3.9+ required. Found: $PYTHON_VERSION${NC}"
         exit 1
     fi
 }
@@ -54,9 +64,61 @@ get_venv_activate() {
     fi
 }
 
+# Check if a port is in use (cross-platform)
+check_port() {
+    local port=$1
+    if command -v lsof &> /dev/null; then
+        # Unix/macOS/Git Bash with lsof
+        lsof -ti:$port > /dev/null 2>&1
+        return $?
+    elif command -v netstat &> /dev/null; then
+        # Windows/Git Bash with netstat
+        netstat -an | grep ":$port " | grep -i "LISTEN" > /dev/null 2>&1
+        return $?
+    elif command -v ss &> /dev/null; then
+        # Modern Linux with ss
+        ss -ln | grep ":$port " > /dev/null 2>&1
+        return $?
+    else
+        # Fallback: try to bind to port (less reliable)
+        $PYTHON_CMD -c "import socket; s=socket.socket(); s.bind(('', $port)); s.close()" 2>/dev/null
+        return $((1-$?))
+    fi
+}
+
+# Get PID of process using port (cross-platform)
+get_port_pid() {
+    local port=$1
+    if command -v lsof &> /dev/null; then
+        lsof -ti:$port 2>/dev/null
+    elif command -v netstat &> /dev/null; then
+        # Windows-style netstat
+        netstat -ano | grep ":$port " | grep "LISTENING" | awk '{print $5}' | head -1
+    fi
+}
+
+# Check for optional dependencies
+check_optional_deps() {
+    MISSING_DEPS=()
+    
+    # Check for curl (for health checks)
+    if ! command -v curl &> /dev/null; then
+        MISSING_DEPS+=("curl (for health checks)")
+    fi
+    
+    # Warn about pandoc (for pypandoc in requirements)
+    if ! command -v pandoc &> /dev/null; then
+        MISSING_DEPS+=("pandoc (for document conversion)")
+    fi
+    
+    # Export for use in other functions
+    export MISSING_DEPS
+}
+
 # Initialize
 detect_os
 detect_python
+check_optional_deps
 
 # Banner
 print_banner() {
@@ -79,8 +141,8 @@ is_running() {
         fi
     fi
     
-    # Also check by port
-    if lsof -ti:$PORT > /dev/null 2>&1; then
+    # Also check by port (cross-platform)
+    if check_port $PORT; then
         return 0
     fi
     
@@ -105,9 +167,13 @@ start_server() {
         $PYTHON_CMD -m venv .venv
         if [ $? -ne 0 ]; then
             echo -e "${RED}❌ Failed to create virtual environment.${NC}"
-            echo -e "${YELLOW}   Try: $PYTHON_CMD -m pip install --upgrade pip${NC}"
+            echo -e "${YELLOW}   Possible fixes:${NC}"
+            echo -e "${YELLOW}   1. Install python3-venv: apt-get install python3-venv${NC}"
+            echo -e "${YELLOW}   2. Upgrade pip: $PYTHON_CMD -m pip install --upgrade pip${NC}"
+            echo -e "${YELLOW}   3. Install virtualenv: $PYTHON_CMD -m pip install virtualenv${NC}"
             return 1
         fi
+        echo -e "${GREEN}✓ Virtual environment created${NC}"
     fi
     
     # Get virtual environment activation script
@@ -126,6 +192,10 @@ start_server() {
         return 1
     fi
     
+    # Upgrade pip to latest version (prevents many installation issues)
+    echo -e "${CYAN}Checking pip version...${NC}"
+    pip install --upgrade pip --quiet 2>&1 | grep -v "Requirement already satisfied" || true
+    
     # Check if requirements file exists
     REQUIREMENTS_FILE="$SCRIPT_DIR/doc/requirements.txt"
     if [ ! -f "$REQUIREMENTS_FILE" ]; then
@@ -138,15 +208,27 @@ start_server() {
         return 1
     fi
     
+    # Warn about optional missing dependencies
+    if [ ${#MISSING_DEPS[@]} -gt 0 ]; then
+        echo -e "${YELLOW}⚠️  Optional dependencies missing (features may be limited):${NC}"
+        for dep in "${MISSING_DEPS[@]}"; do
+            echo -e "   ${YELLOW}• $dep${NC}"
+        done
+        echo -e "${CYAN}   Install them for full functionality, but server will work without them.${NC}"
+    fi
+    
     # Check if requirements are installed
     if ! $PYTHON_CMD -c "import fastapi" 2>/dev/null; then
         echo -e "${YELLOW}⚠️  Dependencies not installed. Installing...${NC}"
+        echo -e "${CYAN}   This may take a few minutes on first run...${NC}"
         pip install -r "$REQUIREMENTS_FILE"
         if [ $? -ne 0 ]; then
             echo -e "${RED}❌ Failed to install dependencies.${NC}"
+            echo -e "${YELLOW}   Try manually: pip install -r $REQUIREMENTS_FILE${NC}"
             deactivate
             return 1
         fi
+        echo -e "${GREEN}✓ Dependencies installed successfully${NC}"
     fi
     
     # Start the server in background
@@ -205,15 +287,20 @@ stop_server() {
         rm -f "$PID_FILE"
     fi
     
-    # Also kill any process on the port
-    PORT_PID=$(lsof -ti:$PORT)
+    # Also kill any process on the port (cross-platform)
+    PORT_PID=$(get_port_pid $PORT)
     if [ ! -z "$PORT_PID" ]; then
         echo -e "   Freeing port $PORT..."
         kill -9 $PORT_PID 2>/dev/null
     fi
     
-    # Kill any remaining server processes
-    pkill -9 -f "python3 server.py" 2>/dev/null
+    # Kill any remaining server processes (cross-platform)
+    if command -v pkill &> /dev/null; then
+        pkill -9 -f "server.py" 2>/dev/null
+    else
+        # Fallback for systems without pkill (like some Windows setups)
+        ps aux 2>/dev/null | grep "server.py" | grep -v grep | awk '{print $2}' | xargs kill -9 2>/dev/null || true
+    fi
     
     sleep 1
     
@@ -328,8 +415,20 @@ run_tests() {
 # Show help
 show_help() {
     print_banner
-    echo -e "${BLUE}Platform:${NC} $OS"
-    echo -e "${BLUE}Python:${NC}   $PYTHON_CMD"
+    echo -e "${BLUE}Environment:${NC}"
+    echo -e "  Platform:  $OS"
+    echo -e "  Python:    $PYTHON_CMD ($PYTHON_VERSION)"
+    
+    # Show warnings if any
+    if [ ${#MISSING_DEPS[@]} -gt 0 ]; then
+        echo -e "  ${YELLOW}Optional:  Missing${NC}"
+        for dep in "${MISSING_DEPS[@]}"; do
+            echo -e "             ${YELLOW}• $dep${NC}"
+        done
+    else
+        echo -e "  ${GREEN}Optional:  All dependencies available${NC}"
+    fi
+    
     echo ""
     echo -e "${BLUE}Usage:${NC}"
     echo -e "  ./dualmind.sh [command]"
