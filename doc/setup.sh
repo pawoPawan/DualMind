@@ -40,7 +40,7 @@ pip install --upgrade pip
 
 # Install dependencies
 echo "Installing dependencies..."
-pip install -r doc/requirements.txt
+pip install -r requirements.txt
 
 echo ""
 echo "================================"

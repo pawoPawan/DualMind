@@ -68,7 +68,7 @@ start http://localhost:8000
 python -m venv .venv
 source .venv/Scripts/activate    # Git Bash
 pip install --upgrade pip
-pip install -r doc/requirements.txt
+pip install -r requirements.txt
 python src/server.py
 
 # Solution 2: Use doc/setup.sh first
@@ -230,7 +230,6 @@ DualMind/
 │   ├── doc/                         # Documentation & Setup
 │   │   ├── DOCUMENTATION.md         # Complete user guide
 │   │   ├── PRODUCTION_READINESS_REPORT.md  # Production guide
-│   │   ├── requirements.txt         # Python dependencies
 │   │   ├── setup.sh                 # Backend setup script
 │   │   └── setup_mobile.sh          # Mobile setup script
 │   ├── dualmind.sh                  # Server manager (All platforms - use with Git Bash on Windows)
@@ -409,8 +408,8 @@ gunicorn server:app -w 4 -k uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
 ```dockerfile
 FROM python:3.11-slim
 WORKDIR /app
-COPY doc/requirements.txt ./doc/requirements.txt
-RUN pip install -r doc/requirements.txt
+COPY requirements.txt ./requirements.txt
+RUN pip install -r requirements.txt
 COPY . .
 CMD ["python", "src/server.py"]
 ```
@@ -593,7 +592,7 @@ DualMind works seamlessly across all major platforms using the **same `dualmind.
 
 **First Run:**
 - Script automatically creates Python virtual environment
-- Installs all dependencies from `doc/requirements.txt`
+- Installs all dependencies from `requirements.txt`
 - May need to make script executable on Unix: `chmod +x dualmind.sh`
 
 ---
@@ -633,7 +632,7 @@ PORT=8001 python3 src/server.py
 python3 --version  # Should be 3.9+
 
 # Reinstall dependencies
-pip install -r doc/requirements.txt
+pip install -r requirements.txt
 ```
 
 **Windows-Specific Issues**:
@@ -949,7 +948,7 @@ source .venv/Scripts/activate
 pip install --upgrade pip
 
 # Install dependencies
-pip install -r doc/requirements.txt
+pip install -r requirements.txt
 
 # Run server directly
 python src/server.py
@@ -1018,7 +1017,7 @@ python -m pip install --upgrade pip
 # Try installing one by one to identify problem
 pip install fastapi
 pip install uvicorn
-pip install -r doc/requirements.txt
+pip install -r requirements.txt
 
 # If specific package fails, install without it:
 pip install --no-deps <package-name>
@@ -1144,7 +1143,7 @@ python src/server.py
 **All Platforms:**
 - Virtual environment: `.venv/`
 - Server script: `src/server.py`
-- Dependencies: `doc/requirements.txt`
+- Dependencies: `requirements.txt`
 
 **Linux/macOS/Git Bash/WSL:**
 - Logs: `/tmp/dualmind_server.log`

@@ -1,20 +1,126 @@
 # ============================================================
-# DualMind AI - Main Requirements File
+# DualMind AI - Python Dependencies
 # ============================================================
 # 
-# This file references the detailed requirements in doc/requirements.txt
+# This file contains ALL required packages for DualMind AI
+# Install: pip install -r requirements.txt
 # 
-# INSTALLATION:
-# 
-#   pip install -r requirements.txt
-#   OR
-#   pip install -r doc/requirements.txt (same result)
-# 
-# QUICK START:
-#   Linux/macOS:  ./dualmind.sh start
-#   Windows:      Use Git Bash and run: ./dualmind.sh start
-# 
+# Cross-platform compatible: Linux, macOS, Windows
+# Python version required: 3.9+
 # ============================================================
 
--r doc/requirements.txt
+# ------------------------------------------------------------
+# Core Web Framework (REQUIRED)
+# ------------------------------------------------------------
+fastapi>=0.104.1,<0.110.0          # Web framework for API
+uvicorn[standard]>=0.24.0,<0.30.0  # ASGI server with websockets
+python-multipart>=0.0.6            # For file uploads
+pydantic>=2.0.0,<3.0.0             # Data validation
+python-dotenv>=1.0.0               # Environment variable management
 
+# ------------------------------------------------------------
+# Cloud AI Providers (REQUIRED for Cloud Mode)
+# ------------------------------------------------------------
+# Google AI (Gemini)
+google-generativeai>=0.3.2,<0.8.0
+
+# OpenAI (GPT-4, GPT-3.5)
+openai>=1.0.0,<2.0.0
+
+# Anthropic (Claude)
+anthropic>=0.18.0,<0.40.0
+
+# ------------------------------------------------------------
+# HTTP & Networking (REQUIRED)
+# ------------------------------------------------------------
+requests>=2.31.0,<3.0.0            # HTTP client library
+httpx>=0.25.0                      # Async HTTP client (used by some providers)
+
+# ------------------------------------------------------------
+# Model Management (REQUIRED for Local Mode)
+# ------------------------------------------------------------
+huggingface-hub>=0.20.1,<0.25.0    # Download models from Hugging Face
+
+# ------------------------------------------------------------
+# RAG Support - Embeddings & Vector Search (REQUIRED for RAG)
+# ------------------------------------------------------------
+# Embedding Providers
+sentence-transformers>=2.2.0,<3.0.0  # Hugging Face embeddings (FREE)
+cohere>=5.0.0,<6.0.0                 # Cohere embeddings API
+voyageai>=0.2.0,<0.3.0               # Voyage AI embeddings API
+
+# Vector Operations
+numpy>=1.24.0,<2.0.0                 # Numerical computing
+scikit-learn>=1.3.0,<2.0.0           # Cosine similarity for embeddings
+
+# ------------------------------------------------------------
+# Document Processing (REQUIRED for RAG Document Upload)
+# ------------------------------------------------------------
+PyPDF2>=3.0.0                      # PDF text extraction
+python-docx>=1.0.0,<2.0.0          # Word document processing (.docx)
+pypandoc>=1.12                     # Universal document converter (optional)
+
+# ------------------------------------------------------------
+# Data Processing & Utilities (REQUIRED)
+# ------------------------------------------------------------
+# These are often dependencies of above packages, but explicit for clarity:
+certifi>=2023.0.0                  # SSL certificates
+charset-normalizer>=3.0.0          # Character encoding detection
+idna>=3.0                          # Internationalized domain names
+urllib3>=2.0.0,<3.0.0              # HTTP library
+
+# ------------------------------------------------------------
+# Optional Performance & Extensions
+# ------------------------------------------------------------
+# Uncomment if needed:
+# orjson>=3.9.0                    # Fast JSON parsing
+# python-jose[cryptography]>=3.3.0 # JWT tokens for auth
+# passlib[bcrypt]>=1.7.4           # Password hashing
+# aiofiles>=23.0.0                 # Async file operations
+
+# ------------------------------------------------------------
+# Development & Testing (Optional - for contributors)
+# ------------------------------------------------------------
+# Uncomment for development:
+# pytest>=7.4.0                    # Testing framework
+# pytest-asyncio>=0.21.0           # Async testing
+# pytest-cov>=4.1.0                # Coverage reporting
+# black>=23.0.0                    # Code formatter
+# flake8>=6.0.0                    # Linting
+# mypy>=1.5.0                      # Type checking
+
+# ============================================================
+# Platform-Specific Notes
+# ============================================================
+# 
+# WINDOWS USERS:
+# - Use Git Bash for best compatibility
+# - Activate venv: source .venv/Scripts/activate
+# - Or use: dualmind.bat (Command Prompt)
+# - Or use: dualmind.ps1 (PowerShell)
+# 
+# LINUX/MACOS USERS:
+# - Activate venv: source .venv/bin/activate
+# - Or use: ./dualmind.sh start
+# 
+# OPTIONAL SYSTEM DEPENDENCIES:
+# - pandoc: Required for pypandoc (document conversion)
+#   - Windows: choco install pandoc
+#   - macOS: brew install pandoc
+#   - Linux: apt-get install pandoc (or yum/dnf)
+# 
+# - curl: Required for health checks (usually pre-installed)
+# 
+# ============================================================
+# Version Compatibility
+# ============================================================
+# 
+# Tested with:
+# - Python 3.9, 3.10, 3.11, 3.12, 3.13
+# - FastAPI 0.104.x - 0.109.x
+# - Pydantic 2.x (v2 API)
+# 
+# Minimum versions ensure compatibility across platforms
+# Maximum versions prevent breaking changes
+# 
+# ============================================================

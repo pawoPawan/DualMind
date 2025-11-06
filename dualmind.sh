@@ -197,10 +197,7 @@ start_server() {
     pip install --upgrade pip --quiet 2>&1 | grep -v "Requirement already satisfied" || true
     
     # Check if requirements file exists
-    REQUIREMENTS_FILE="$SCRIPT_DIR/doc/requirements.txt"
-    if [ ! -f "$REQUIREMENTS_FILE" ]; then
-        REQUIREMENTS_FILE="$SCRIPT_DIR/requirements.txt"
-    fi
+    REQUIREMENTS_FILE="$SCRIPT_DIR/requirements.txt"
     
     if [ ! -f "$REQUIREMENTS_FILE" ]; then
         echo -e "${RED}❌ requirements.txt not found.${NC}"
