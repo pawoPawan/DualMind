@@ -26,16 +26,65 @@
 
 ### Web Application
 
-**One command works on all platforms:**
+#### Linux / macOS
 
 ```bash
 # Start the server
 ./dualmind.sh start
 
 # Open in your browser
-# Linux: xdg-open http://localhost:8000
-# macOS: open http://localhost:8000
-# Windows: start http://localhost:8000
+open http://localhost:8000  # macOS
+xdg-open http://localhost:8000  # Linux
+```
+
+#### Windows (Git Bash) - RECOMMENDED
+
+```bash
+# IMPORTANT: Run in Git Bash, NOT Command Prompt or PowerShell
+
+# 1. Navigate to project directory
+cd DualMind
+
+# 2. First time setup (creates virtual environment & installs dependencies)
+./dualmind.sh start
+
+# 3. Open in browser
+start http://localhost:8000
+```
+
+**If you get "ModuleNotFoundError: No module named 'fastapi'":**
+
+```bash
+# Solution 1: Manual setup (recommended)
+python -m venv .venv
+source .venv/Scripts/activate    # Git Bash
+pip install --upgrade pip
+pip install -r doc/requirements.txt
+python src/server.py
+
+# Solution 2: Use doc/setup.sh first
+./doc/setup.sh
+./dualmind.sh start
+
+# Solution 3: Verify virtual environment
+ls -la .venv/Scripts/  # Should see activate, python.exe, etc.
+```
+
+#### Windows (Command Prompt)
+
+```cmd
+REM Use the batch file
+dualmind.bat start
+```
+
+#### Windows (PowerShell)
+
+```powershell
+# May need to set execution policy first (run as Administrator)
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+
+# Then run
+.\dualmind.ps1 start
 ```
 
 That's it! Choose **Cloud Mode** (with API key) or **Local Mode** (no API key required).
@@ -809,18 +858,100 @@ netstat -ano | findstr :8000
 taskkill /PID <PID> /F
 ```
 
+### Issue: Windows - "ModuleNotFoundError: No module named 'fastapi'"
+
+**This is the most common Windows issue.** It happens when the virtual environment isn't properly activated or dependencies aren't installed.
+
+**Solution 1: Manual Setup (Most Reliable)**
+```bash
+# In Git Bash, navigate to DualMind directory
+cd /c/path/to/DualMind
+
+# Create virtual environment
+python -m venv .venv
+
+# Activate it (Git Bash syntax)
+source .venv/Scripts/activate
+
+# You should see (.venv) in your prompt
+
+# Upgrade pip
+pip install --upgrade pip
+
+# Install dependencies
+pip install -r doc/requirements.txt
+
+# Run server directly
+python src/server.py
+
+# Or use the management script
+./dualmind.sh start
+```
+
+**Solution 2: Clean Reinstall**
+```bash
+# Remove existing virtual environment
+rm -rf .venv
+
+# Run setup script
+./doc/setup.sh
+
+# Start server
+./dualmind.sh start
+```
+
+**Solution 3: Verify Virtual Environment**
+```bash
+# Check if .venv exists and has correct structure
+ls -la .venv/Scripts/
+
+# Should see:
+# - activate (activation script)
+# - python.exe (Python executable)
+# - pip.exe (pip executable)
+
+# If missing, recreate: python -m venv .venv
+```
+
+**Solution 4: Use Windows Native Scripts Instead**
+```cmd
+REM In Command Prompt
+dualmind.bat start
+```
+
 ### Issue: Windows - "Git Bash not found"
 
 **Solution:** Install [Git for Windows](https://git-scm.com/download/win) which includes Git Bash.
 
+### Issue: Windows - Virtual Environment Not Activating
+
+**Symptoms:** Commands run but still get import errors
+
+**Check:**
+```bash
+# See if virtual environment is active
+which python
+
+# Should show: /c/path/to/DualMind/.venv/Scripts/python
+# NOT: /c/Python39/python or similar
+
+# If wrong, manually activate:
+source .venv/Scripts/activate
+```
+
 ### Issue: Dependencies won't install
 
 ```bash
-# Upgrade pip
+# Upgrade pip first
 python -m pip install --upgrade pip
 
-# Retry installation
+# Try installing one by one to identify problem
+pip install fastapi
+pip install uvicorn
 pip install -r doc/requirements.txt
+
+# If specific package fails, install without it:
+pip install --no-deps <package-name>
 ```
 
 ---
