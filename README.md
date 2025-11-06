@@ -12,14 +12,29 @@
 
 ## 🚀 Quick Start
 
+### Prerequisites
+
+**All Platforms:**
+- Python 3.9 or higher
+- Git (includes Git Bash on Windows)
+
+**Windows Users:** The `dualmind.sh` script works through:
+- **Git Bash** (comes with Git for Windows) - Recommended
+- **WSL** (Windows Subsystem for Linux) - Alternative
+- **PowerShell alternatives:** Use `dualmind.bat` or `dualmind.ps1` if you prefer
+
 ### Web Application
+
+**One command works on all platforms:**
 
 ```bash
 # Start the server
 ./dualmind.sh start
 
-# Open browser
-open http://localhost:8000
+# Open in your browser
+# Linux: xdg-open http://localhost:8000
+# macOS: open http://localhost:8000
+# Windows: start http://localhost:8000
 ```
 
 That's it! Choose **Cloud Mode** (with API key) or **Local Mode** (no API key required).
@@ -98,7 +113,9 @@ DualMind/
 │   │   ├── requirements.txt         # Python dependencies
 │   │   ├── setup.sh                 # Backend setup script
 │   │   └── setup_mobile.sh          # Mobile setup script
-│   ├── dualmind.sh                  # Server manager (start/stop/status)
+│   ├── dualmind.sh                  # Server manager (All platforms - use with Git Bash on Windows)
+│   ├── dualmind.ps1                 # Alternative for Windows PowerShell
+│   ├── dualmind.bat                 # Alternative for Windows Command Prompt
 │   └── static/
 │       ├── css/local.css            # Modular CSS
 │       ├── js/                      # Modular JavaScript
@@ -327,7 +344,8 @@ eas update --branch production
 
 ## 🧪 Testing
 
-Run all tests with a single command:
+Run all tests with a single command (works on all platforms):
+
 ```bash
 # Run all automated tests with consolidated summary
 ./dualmind.sh test
@@ -336,20 +354,28 @@ Run all tests with a single command:
 Or run individual test suites:
 ```bash
 # RAG integration tests
-python3 tests/run_rag_tests.py
+python tests/run_rag_tests.py
 
 # Pytest (if installed)
 pytest tests/integration/
 
 # Master test runner directly
-python3 tests/run_all_tests.py
+python tests/run_all_tests.py
 ```
+
+**Windows Note:** Use Git Bash or WSL to run `./dualmind.sh test`, or use `dualmind.bat test` in Command Prompt.
 
 See `tests/README.md` for comprehensive testing documentation.
 
 ---
 
 ## 💡 Tips & Best Practices
+
+### Getting Started
+- **All Platforms**: Use `./dualmind.sh` for consistent experience
+- **Windows Users**: Install [Git for Windows](https://git-scm.com/download/win) to use Git Bash
+- **First Run**: Allow time for virtual environment creation and dependency installation
+- **Python Version**: Ensure Python 3.9+ with `python --version` or `python3 --version`
 
 ### Web Application
 - **Model Selection**: Start with recommended models (marked with ⭐)
@@ -371,6 +397,85 @@ See `tests/README.md` for comprehensive testing documentation.
 - **Document Size**: Keep documents under 10MB for optimal performance
 - **Chunking**: System automatically chunks documents for better retrieval
 
+### Platform-Specific Tips
+
+**Windows:**
+- Git Bash provides the best compatibility with `dualmind.sh`
+- WSL offers native Linux experience on Windows
+- Use `dualmind.bat` if you prefer Command Prompt
+- Check Python is in PATH: `where python` or `which python`
+
+**Linux/macOS:**
+- Make script executable once: `chmod +x dualmind.sh`
+- Use `open` (macOS) or `xdg-open` (Linux) to launch browser
+- Virtual environment isolated in `.venv` directory
+
+---
+
+## 🖥️ Platform Compatibility
+
+DualMind works seamlessly across all major platforms using the **same `dualmind.sh` script**:
+
+| Platform | Status | Command | Requirements |
+|----------|--------|---------|--------------|
+| **Linux** | ✅ Fully Supported | `./dualmind.sh [command]` | Python 3.9+, Bash |
+| **macOS** | ✅ Fully Supported | `./dualmind.sh [command]` | Python 3.9+, Bash |
+| **Windows** | ✅ Fully Supported | `./dualmind.sh [command]` | Python 3.9+, Git Bash/WSL |
+
+### All Commands Available
+
+```bash
+./dualmind.sh start      # Start the server
+./dualmind.sh stop       # Stop the server
+./dualmind.sh restart    # Restart the server
+./dualmind.sh status     # Show server status
+./dualmind.sh logs       # View live logs
+./dualmind.sh test       # Run all tests
+./dualmind.sh help       # Show help
+```
+
+### Windows Setup
+
+**Option 1: Git Bash (Recommended)**
+1. Install [Git for Windows](https://git-scm.com/download/win) (includes Git Bash)
+2. Open Git Bash
+3. Navigate to DualMind directory: `cd /c/path/to/DualMind`
+4. Run: `./dualmind.sh start`
+
+**Option 2: WSL (Windows Subsystem for Linux)**
+1. Enable WSL: `wsl --install`
+2. Install Ubuntu from Microsoft Store
+3. Open Ubuntu terminal
+4. Navigate to your DualMind directory
+5. Run: `./dualmind.sh start`
+
+**Option 3: Native Windows Scripts (Alternative)**
+- Use `dualmind.bat start` (Command Prompt)
+- Use `.\dualmind.ps1 start` (PowerShell)
+
+### Platform-Specific Details
+
+**File Locations:**
+- **Linux/macOS:**
+  - Virtual env: `.venv/`
+  - Logs: `/tmp/dualmind_server.log`
+  - PID: `/tmp/dualmind_server.pid`
+
+- **Windows (Git Bash/WSL):**
+  - Virtual env: `.venv/`
+  - Logs: `/tmp/dualmind_server.log` (in Bash/WSL context)
+  - PID: `/tmp/dualmind_server.pid` (in Bash/WSL context)
+
+- **Windows (Native scripts):**
+  - Virtual env: `.venv\`
+  - Logs: `%TEMP%\dualmind_server.log`
+  - PID: `%TEMP%\dualmind_server.pid`
+
+**First Run:**
+- Script automatically creates Python virtual environment
+- Installs all dependencies from `doc/requirements.txt`
+- May need to make script executable on Unix: `chmod +x dualmind.sh`
+
 ---
 
 ## 🐛 Troubleshooting
@@ -379,9 +484,18 @@ See `tests/README.md` for comprehensive testing documentation.
 
 **Port already in use**:
 ```bash
+# Stop any running instance first
+./dualmind.sh stop
+
+# Or kill process manually (Linux/macOS/Git Bash)
 lsof -ti:8000 | xargs kill
+
+# Windows Command Prompt
+netstat -ano | findstr :8000
+taskkill /PID <PID> /F
+
 # Or use different port
-PORT=8001 python3 server.py
+PORT=8001 python3 src/server.py
 ```
 
 **Server won't start**:
@@ -389,12 +503,34 @@ PORT=8001 python3 server.py
 # Check status
 ./dualmind.sh status
 
-# View logs
+# View logs for errors
 ./dualmind.sh logs
 
-# Restart
+# Try restarting
 ./dualmind.sh restart
+
+# Check Python version
+python3 --version  # Should be 3.9+
+
+# Reinstall dependencies
+pip install -r doc/requirements.txt
 ```
+
+**Windows-Specific Issues**:
+
+1. **"bash: command not found"**
+   - Install [Git for Windows](https://git-scm.com/download/win)
+   - Use Git Bash (not Command Prompt or PowerShell)
+   - Alternatively, use `dualmind.bat` for native Windows
+
+2. **"Permission denied"**
+   - In Git Bash: `chmod +x dualmind.sh`
+   - Or use: `bash dualmind.sh start`
+
+3. **"Python not found"**
+   - Install Python 3.9+ and add to PATH
+   - In Git Bash, use `python` instead of `python3`
+   - Verify: `python --version`
 
 ### Mobile Issues
 
@@ -532,24 +668,298 @@ MIT License - Open source, free to use and modify.
 
 ### Quick Reference
 
+**All Platforms (use Git Bash on Windows):**
+
 ```bash
-# Web: Start server
-./dualmind.sh start
+# Web Application
+./dualmind.sh start      # Start server
+./dualmind.sh status     # Check status
+./dualmind.sh stop       # Stop server
+./dualmind.sh restart    # Restart server
+./dualmind.sh logs       # View logs
+./dualmind.sh test       # Run tests
+./dualmind.sh help       # Show help
 
-# Web: Check status  
-./dualmind.sh status
+# Mobile Application
+./doc/setup_mobile.sh    # One-time setup
+cd mobile && npm start   # Start mobile dev server
 
-# Web: Stop server
-./dualmind.sh stop
+# Direct Python (all platforms)
+python src/server.py     # Run server directly
+python tests/run_all_tests.py  # Run tests directly
+```
 
-# Mobile: Setup
-./doc/setup_mobile.sh
+**Windows Alternatives (Command Prompt/PowerShell):**
 
-# Mobile: Start
-cd mobile && npm start
+```cmd
+REM Using batch file
+dualmind.bat start
+dualmind.bat status
+dualmind.bat stop
 
-# Tests: Run all
-pytest
+REM Using PowerShell
+.\dualmind.ps1 start
+.\dualmind.ps1 status
+.\dualmind.ps1 stop
 ```
 
 **Documentation**: Browse `/docs` endpoint when server is running: `http://localhost:8000/docs`
+
+---
+
+## 🔧 Detailed Cross-Platform Setup
+
+### Windows Setup Options
+
+#### Option 1: Git Bash (⭐ Recommended)
+
+**Why Git Bash?**
+- Comes free with Git for Windows
+- Provides bash compatibility on Windows
+- Use `./dualmind.sh` like Linux/macOS users
+- Best for cross-platform teams
+
+**Installation:**
+1. Download [Git for Windows](https://git-scm.com/download/win)
+2. Run installer with default options
+3. Right-click in DualMind folder → "Git Bash Here"
+4. Run: `./dualmind.sh start`
+
+**Git Bash Path Note:**
+- Windows: `C:\Users\YourName\DualMind`
+- Git Bash: `/c/Users/YourName/DualMind`
+
+#### Option 2: WSL (Windows Subsystem for Linux)
+
+**Why WSL?**
+- Full Linux environment on Windows
+- Access to all Linux tools
+- Great for development work
+
+**Installation:**
+```cmd
+# Open PowerShell as Administrator
+wsl --install
+
+# Install Ubuntu from Microsoft Store
+# Open Ubuntu terminal
+cd /mnt/c/Users/YourName/DualMind
+./dualmind.sh start
+```
+
+#### Option 3: Native Windows Scripts
+
+**When to use:**
+- Prefer Command Prompt or PowerShell
+- Don't want to install Git Bash/WSL
+
+**Command Prompt:**
+```cmd
+dualmind.bat start
+```
+
+**PowerShell:**
+```powershell
+# May need execution policy change first
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+
+# Then run
+.\dualmind.ps1 start
+```
+
+---
+
+## 🐛 Common Issues & Solutions
+
+### Issue: "bash: ./dualmind.sh: Permission denied"
+
+**Linux/macOS:**
+```bash
+chmod +x dualmind.sh
+./dualmind.sh start
+```
+
+**Windows Git Bash:**
+```bash
+bash dualmind.sh start
+```
+
+### Issue: "command not found: python3"
+
+**Check Python:**
+```bash
+python3 --version  # Linux/macOS
+python --version   # Windows
+```
+
+**Solution:** Install Python 3.9+ from [python.org](https://www.python.org/) and ensure it's in PATH.
+
+### Issue: "Port 8000 already in use"
+
+```bash
+# Stop existing instance
+./dualmind.sh stop
+
+# Or kill manually
+lsof -ti:8000 | xargs kill  # Linux/macOS/Git Bash
+
+# Windows Command Prompt
+netstat -ano | findstr :8000
+taskkill /PID <PID> /F
+```
+
+### Issue: Windows - "Git Bash not found"
+
+**Solution:** Install [Git for Windows](https://git-scm.com/download/win) which includes Git Bash.
+
+### Issue: Dependencies won't install
+
+```bash
+# Upgrade pip
+python -m pip install --upgrade pip
+
+# Retry installation
+pip install -r doc/requirements.txt
+```
+
+---
+
+## ✅ Verification Checklist
+
+Before using DualMind, verify:
+
+- [x] Python 3.9+ installed: `python --version` or `python3 --version`
+- [x] Git installed (for Windows users): `git --version`
+- [x] In DualMind directory: `pwd` shows correct path
+- [x] Script exists: `ls dualmind.sh` shows file
+- [x] Port 8000 available: `./dualmind.sh status` shows stopped
+- [x] Internet connection (for first-run dependency install)
+
+---
+
+## 🎓 Understanding the Scripts
+
+### dualmind.sh (Bash - Universal)
+- **Runs on:** Linux, macOS, Git Bash, WSL
+- **Purpose:** Main management script
+- **Features:** Virtual env, dependencies, process management, health checks
+
+### dualmind.bat (Windows Batch)
+- **Runs on:** Windows Command Prompt
+- **Purpose:** Calls PowerShell script
+- **Features:** Simple Windows interface
+
+### dualmind.ps1 (PowerShell)
+- **Runs on:** Windows PowerShell
+- **Purpose:** Native Windows management
+- **Features:** Full parity with bash script
+
+**All three scripts provide identical functionality!**
+
+---
+
+## 🎯 Best Practices
+
+### For All Users
+- Use `./dualmind.sh` for consistency across platforms
+- Check status before starting: `./dualmind.sh status`
+- View logs for troubleshooting: `./dualmind.sh logs`
+- Stop server when done: `./dualmind.sh stop`
+
+### For Windows Users
+- Git Bash recommended for best compatibility
+- Add Python to PATH during installation
+- Use `python` instead of `python3` in Git Bash
+- Check firewall allows port 8000
+
+### For Teams
+- Standardize on `./dualmind.sh` commands
+- Document using Git Bash on Windows
+- Share same command examples
+- Test on multiple platforms when contributing
+
+### For Development
+- Activate virtual environment for development: `source .venv/bin/activate`
+- Run tests before committing: `./dualmind.sh test`
+- Check logs for errors: `./dualmind.sh logs`
+- Use separate branch for platform-specific changes
+
+---
+
+## 🚀 Advanced Configuration
+
+### Custom Port
+
+Edit `dualmind.sh` line 16:
+```bash
+PORT=8001  # Change from 8000
+```
+
+Or run directly:
+```bash
+PORT=8001 python src/server.py
+```
+
+### Development Mode (Auto-reload)
+
+```bash
+# Activate virtual environment
+source .venv/bin/activate  # Linux/macOS
+.venv\Scripts\activate     # Windows
+
+# Run with uvicorn
+uvicorn src.server:app --reload --port 8000
+```
+
+### Background vs Foreground
+
+```bash
+# Background (default)
+./dualmind.sh start
+
+# Foreground (for debugging)
+python src/server.py
+```
+
+---
+
+## 📊 Platform Comparison
+
+| Feature | Linux | macOS | Windows (Git Bash) | Windows (Native) |
+|---------|-------|-------|-------------------|------------------|
+| `./dualmind.sh` | ✅ | ✅ | ✅ | ❌ |
+| `dualmind.bat` | ❌ | ❌ | ❌ | ✅ |
+| `dualmind.ps1` | ❌ | ❌ | ❌ | ✅ |
+| Setup Time | Fast | Fast | Fast | Fast |
+| Dependencies | Same | Same | Same | Same |
+| Performance | Native | Native | Emulated | Native |
+| Recommended | ✅ | ✅ | ✅ | Alt |
+
+---
+
+## 🔍 File Locations
+
+**All Platforms:**
+- Virtual environment: `.venv/`
+- Server script: `src/server.py`
+- Dependencies: `doc/requirements.txt`
+
+**Linux/macOS/Git Bash/WSL:**
+- Logs: `/tmp/dualmind_server.log`
+- PID: `/tmp/dualmind_server.pid`
+
+**Windows Native Scripts:**
+- Logs: `%TEMP%\dualmind_server.log`
+- PID: `%TEMP%\dualmind_server.pid`
+
+---
+
+## 🎉 Success!
+
+Once everything is running, you should see:
+- ✅ Server running on http://localhost:8000
+- ✅ Health check responding at http://localhost:8000/health
+- ✅ Web interface loads
+- ✅ Can chat in Cloud or Local mode
+
+**Congratulations! You're ready to use DualMind!** 🚀
