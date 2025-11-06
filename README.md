@@ -7,6 +7,9 @@
 [![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-green.svg)](https://fastapi.tiangolo.com/)
 [![React Native](https://img.shields.io/badge/React_Native-Expo-blue.svg)](https://expo.dev/)
+[![Cross-Platform](https://img.shields.io/badge/Platform-Linux%20%7C%20macOS%20%7C%20Windows-brightgreen.svg)](CROSS_PLATFORM_REVIEW.md)
+
+> 📋 **[Comprehensive Cross-Platform Review](CROSS_PLATFORM_REVIEW.md)** - Detailed analysis of platform compatibility
 
 ---
 
