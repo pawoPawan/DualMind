@@ -16,13 +16,22 @@
 ### Prerequisites
 
 **All Platforms:**
-- Python 3.9 or higher
-- Git (includes Git Bash on Windows)
+- **Python 3.9 or higher** (3.9, 3.10, 3.11, 3.12, or 3.13)
+- **Git** (includes Git Bash on Windows)
+- **pip** (comes with Python)
+- **Internet connection** (for first-time dependency installation)
 
 **Windows Users:** The `dualmind.sh` script works through:
-- **Git Bash** (comes with Git for Windows) - Recommended
+- **Git Bash** (comes with Git for Windows) - ⭐ **RECOMMENDED**
 - **WSL** (Windows Subsystem for Linux) - Alternative
 - **PowerShell alternatives:** Use `dualmind.bat` or `dualmind.ps1` if you prefer
+
+**Optional System Dependencies:**
+- `pandoc` - For advanced document conversion (optional)
+  - Windows: `choco install pandoc`
+  - macOS: `brew install pandoc`
+  - Linux: `apt-get install pandoc` or `yum install pandoc`
+- `curl` - For health checks (usually pre-installed)
 
 ### Web Application
 
@@ -103,6 +112,67 @@ cd mobile && npm start
 ```
 
 Scan QR code with **Expo Go** app ([iOS](https://apps.apple.com/app/expo-go/id982107779) | [Android](https://play.google.com/store/apps/details?id=host.exp.exponent))
+
+---
+
+## 📦 Dependencies
+
+DualMind uses carefully selected, cross-platform compatible packages.
+
+### Core Dependencies (Always Required)
+
+```
+fastapi>=0.104.1          # Web framework for REST API
+uvicorn[standard]>=0.24.0 # ASGI server with WebSocket support
+pydantic>=2.0.0           # Data validation and serialization
+python-dotenv>=1.0.0      # Environment variable management
+requests>=2.31.0          # HTTP client library
+numpy>=1.24.0             # Numerical computing
+```
+
+### Cloud AI Providers (Required for Cloud Mode)
+
+```
+google-generativeai>=0.3.2  # Google Gemini API
+openai>=1.0.0               # OpenAI GPT models
+anthropic>=0.18.0           # Anthropic Claude models
+```
+
+### RAG Support (Required for Document Upload & Search)
+
+```
+sentence-transformers>=2.2.0  # Hugging Face embeddings (FREE)
+cohere>=5.0.0                 # Cohere embeddings API
+voyageai>=0.2.0               # Voyage AI embeddings
+scikit-learn>=1.3.0           # Vector similarity calculations
+PyPDF2>=3.0.0                 # PDF text extraction
+python-docx>=1.0.0            # Word document processing
+```
+
+### Model Management (Required for Local Mode)
+
+```
+huggingface-hub>=0.20.1  # Download AI models from Hugging Face
+```
+
+### Installation
+
+**Automatic (Recommended):**
+```bash
+# Linux/macOS/Git Bash
+./dualmind.sh start  # Installs everything automatically
+
+# Or manual
+pip install -r requirements.txt
+```
+
+**All packages are:**
+- ✅ Cross-platform compatible (Linux, macOS, Windows)
+- ✅ Pure Python or have pre-built wheels
+- ✅ Well-maintained and actively developed
+- ✅ Version-pinned for stability
+
+**Total install size:** ~500MB-1GB (depends on which providers you use)
 
 ---
 

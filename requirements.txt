@@ -1,0 +1,20 @@
+# ============================================================
+# DualMind AI - Main Requirements File
+# ============================================================
+# 
+# This file references the detailed requirements in doc/requirements.txt
+# 
+# INSTALLATION:
+# 
+#   pip install -r requirements.txt
+#   OR
+#   pip install -r doc/requirements.txt (same result)
+# 
+# QUICK START:
+#   Linux/macOS:  ./dualmind.sh start
+#   Windows:      Use Git Bash and run: ./dualmind.sh start
+# 
+# ============================================================
+
+-r doc/requirements.txt
+
